@@ -38,7 +38,7 @@ class EnvReader
         $value = trim($value);
 
         // Удаляем кавычки, если они есть
-        if (preg_match('/^"(.*)"$/', $value, $matches) {
+        if (preg_match('/^"(.*)"$/', $value, $matches)) {
             $value = $matches[1];
         } elseif (preg_match('/^\'(.*)\'$/', $value, $matches)) {
             $value = $matches[1];
