@@ -1,11 +1,9 @@
 <?
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-error_reporting(E_ALL);
-require_once 'Core/EnvReader.php';
+//ini_set('display_errors', '1');
+//ini_set('display_startup_errors', '1');
+//error_reporting(E_ALL);
 
-EnvReader::load();
-define("BOT_TOKEN", EnvReader::get('BOT_TOKEN'));
+require_once 'Core/Init.php';
 
 echo "Hello World Test :".BOT_TOKEN;
 ?>
