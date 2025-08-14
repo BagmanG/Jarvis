@@ -1,0 +1,123 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.sidebar {
+    padding: 0;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.main-content {
+    margin-left: auto;
+    padding-left: 0;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 12px 20px;
+    border-left: 3px solid transparent;
+    transition: all 0.3s;
+}
+
+.nav-link:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-left: 3px solid #0d6efd;
+}
+
+.task-card {
+    margin-bottom: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.task-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.task-card .card-body {
+    padding: 1.5rem;
+}
+
+.task-card .card-title {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.task-card .card-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.task-card .task-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.task-card .task-date {
+    color: #6c757d;
+}
+
+.task-card .task-priority {
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.priority-low {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.priority-medium {
+    background-color: #fff3cd;
+    color: #664d03;
+}
+
+.priority-high {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.task-card .task-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.completed .card-title,
+.completed .card-text {
+    text-decoration: line-through;
+    color: #adb5bd !important;
+}
+
+.empty-state {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: static;
+        height: auto;
+    }
+    .main-content {
+        padding-left: 15px;
+    }
+}
