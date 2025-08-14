@@ -1,14 +1,14 @@
 <?
-//ini_set('display_errors', '1');
-//ini_set('display_startup_errors', '1');
-//error_reporting(E_ALL);
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
 
-require_once __DIR__ . '/core/Init.php'; // Подключаем ваш Init.php
+require_once __DIR__ . '/Core/Init.php'; // Подключаем ваш Init.php
 require __DIR__ . '/config.php';
-require __DIR__ . '/core/BotCore.php';
-require __DIR__ . '/core/Command.php';
-require __DIR__ . '/core/Router.php';
-require __DIR__ . '/core/Messages.php';
+require __DIR__ . '/Core/BotCore.php';
+require __DIR__ . '/Core/Command.php';
+require __DIR__ . '/Core/Router.php';
+require __DIR__ . '/Core/Messages.php';
 
 // Автозагрузка команд
 spl_autoload_register(function ($class) {
