@@ -36,7 +36,7 @@ if (isset($update["message"])) {
         sendMessage($chat_id, "не скажу");
     } else {
         // Если ни одно условие не выполнено
-
+        sendMessage($chat_id, "Думаю...");
         sendMessage($chat_id, GPT::GetMessage($text));
     }
 }
