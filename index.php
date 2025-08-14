@@ -1,10 +1,10 @@
-<?
+<?php
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
-require_once __DIR__ . '/Core/Init.php'; // Подключаем ваш Init.php
-require __DIR__ . '/config.php';
+require_once __DIR__ . '/Core/Init.php';
+$config = require __DIR__ . '/config.php'; // Теперь $config точно будет массивом
 require __DIR__ . '/Core/BotCore.php';
 require __DIR__ . '/Core/Command.php';
 require __DIR__ . '/Core/Router.php';
@@ -18,7 +18,7 @@ spl_autoload_register(function ($class) {
     }
 });
 
-// Запуск бота (теперь без передачи токена в BotCore)
+// Запуск бота
 $bot = new Bot\Core\BotCore($config);
 $bot->run();
 ?>

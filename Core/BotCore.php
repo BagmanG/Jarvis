@@ -1,6 +1,5 @@
 <?php
 namespace Bot\Core;
-use Bot\Core\Images;
 class BotCore {
     protected $update;
     protected $config;
@@ -24,7 +23,6 @@ class BotCore {
     
     public function run(): void {
         if (!$this->getMessage()) return;
-        Images::init('/assets/images/');
         $router = new Router($this->config['commands']);
         $command = $router->resolve($this->getText());
         $command->execute($this->getChatId(), $this->getText());

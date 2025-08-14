@@ -1,7 +1,11 @@
 <?php
-return [
+$config = [
     'commands' => [
         '/start' => 'StartCommand',
-        '/help' => 'HelpCommand'
-    ]
+        '/help'  => 'HelpCommand',
+        // другие команды...
+    ],
+    // другие настройки...
 ];
+
+return $config;
