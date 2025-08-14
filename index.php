@@ -23,9 +23,8 @@ if (isset($update["message"])) {
     
     // Обработка команд
     if (strpos($text, "/start") === 0) {
-        // Отправка текста с фотографией
-        $photo_url = "https://bagmanov.com/projects/jarvis/assets/images/start.jpg"; // Замените на реальный URL изображения
-        $caption = "Привет! Это стартовое сообщение с фотографией.\n".Images::$start;
+        $photo_url = Images::$start;
+        $caption = "Привет! Я — Джарвис, твой персональный голосовой помощник.\nМоя задача — помочь тебе достичь целей и организовать день.\nДавай познакомимся.".Images::$start;
         
         sendPhoto($chat_id, $photo_url, $caption);
     } elseif (strpos($text, "/help") === 0) {
