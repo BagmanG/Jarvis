@@ -5,6 +5,7 @@ error_reporting(E_ALL);
 
 require_once 'Core/Init.php';
 require_once 'Core/GPT.php';
+require_once 'Core/Images.php';
 
 $content = file_get_contents("php://input");
 $update = json_decode($content, true);
@@ -23,8 +24,8 @@ if (isset($update["message"])) {
     // Обработка команд
     if (strpos($text, "/start") === 0) {
         // Отправка текста с фотографией
-        $photo_url = "https://example.com/path/to/your/image.jpg"; // Замените на реальный URL изображения
-        $caption = "Привет! Это стартовое сообщение с фотографией.";
+        $photo_url = "https://bagmanov.com/projects/jarvis/assets/images/start.jpg"; // Замените на реальный URL изображения
+        $caption = "Привет! Это стартовое сообщение с фотографией.\n".Images::$start;
         
         sendPhoto($chat_id, $photo_url, $caption);
     } elseif (strpos($text, "/help") === 0) {
