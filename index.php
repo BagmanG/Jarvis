@@ -16,7 +16,7 @@ if (!$update) {
     exit;
 }
 GPT::Init(AI_TOKEN);
-
+Events::Init(DB_PASSWORD,DB_NAME);
 // Проверяем, есть ли сообщение в обновлении
 if (isset($update["message"])) {
     Vars::initFromUpdate($update);
