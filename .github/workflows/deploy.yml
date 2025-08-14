@@ -23,6 +23,7 @@ jobs:
       - name: Create .env file
         run: |
           echo "BOT_TOKEN=${{ secrets.BOT_TOKEN }}" > .env
+          echo "AI_TOKEN=${{ secrets.AI_TOKEN }}" >> .env
           # Добавьте другие переменные
 
       # 4. Деплой через FTP с удалением лишних файлов
