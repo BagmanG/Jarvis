@@ -42,7 +42,7 @@ class Events {
 
     // Если пользователя нет — добавляем с датой регистрации
     if ($result->num_rows === 0) {
-        $insertQuery = "INSERT INTO Users (userId, username, registered) 
+        $insertQuery = "INSERT INTO Users (userId, username, registrated) 
                          VALUES ('$userId', '$username', '$registeredFormatted')";
         $insertResult = self::$connection->query($insertQuery);
 
