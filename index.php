@@ -15,6 +15,7 @@ if (!$update) {
     exit;
 }
 GPT::Init(AI_TOKEN);
+
 // Проверяем, есть ли сообщение в обновлении
 if (isset($update["message"])) {
     $message = $update["message"];
@@ -24,9 +25,41 @@ if (isset($update["message"])) {
     // Обработка команд
     if (strpos($text, "/start") === 0) {
         $photo_url = Images::$start;
-        $caption = "Привет! Я — Джарвис, твой персональный голосовой помощник.\nМоя задача — помочь тебе достичь целей и организовать день.\nДавай познакомимся.".Images::$start;
+        $caption = "Привет! Я — Джарвис, твой персональный голосовой помощник.\nМоя задача — помочь тебе достичь целей и организовать день.\nДавай познакомимся.";
         
-        sendPhoto($chat_id, $photo_url, $caption);
+        // Создаем inline клавиатуру с кнопкой "Пройти тест"
+        $keyboard = [
+            'inline_keyboard' => [
+                [
+                    [
+                        'text' => 'Пройти тест',
+                        'callback_data' => 'start_test'
+                    ]
+                ]
+            ]
+        ];
+        
+        $encodedKeyboard = json_encode($keyboard);
+        
+        $url = "https://api.telegram.org/bot" . BOT_TOKEN . "/sendPhoto";
+        $data = [
+            'chat_id' => $chat_id,
+            'photo' => $photo_url,
+            'caption' => $caption,
+            'parse_mode' => 'HTML',
+            'reply_markup' => $encodedKeyboard
+        ];
+        
+        $options = [
+            'http' => [
+                'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
+                'method' => 'POST',
+                'content' => http_build_query($data)
+            ]
+        ];
+        
+        $context = stream_context_create($options);
+        file_get_contents($url, false, $context);
     } elseif (strpos($text, "/help") === 0) {
         // Отправка текста помощи
         $help_text = "Это справочное сообщение.\nДоступные команды:\n/start - начать работу\n/help - получить помощь";
@@ -38,6 +71,17 @@ if (isset($update["message"])) {
         // Если ни одно условие не выполнено
         sendMessage($chat_id, "Думаю...");
         sendMessage($chat_id, GPT::GetMessage($text));
+    }
+}
+
+// Обработка callback запросов от inline кнопок
+if (isset($update["callback_query"])) {
+    $callback_query = $update["callback_query"];
+    $chat_id = $callback_query["message"]["chat"]["id"];
+    $data = $callback_query["data"];
+    
+    if ($data == 'start_test') {
+        sendMessage($chat_id, "Как тебя зовут?");
     }
 }
 
