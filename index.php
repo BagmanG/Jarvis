@@ -4,6 +4,7 @@ ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
 require_once 'Core/Init.php';
+require_once 'Core/GPT.php';
 
 $content = file_get_contents("php://input");
 $update = json_decode($content, true);
@@ -12,7 +13,7 @@ if (!$update) {
     // Получено неверное обновление
     exit;
 }
-
+GPT::Init(AI_TOKEN);
 // Проверяем, есть ли сообщение в обновлении
 if (isset($update["message"])) {
     $message = $update["message"];
@@ -35,7 +36,8 @@ if (isset($update["message"])) {
         sendMessage($chat_id, "не скажу");
     } else {
         // Если ни одно условие не выполнено
-        sendMessage($chat_id, "Извините, я вас не понял.");
+
+        sendMessage($chat_id, GPT::GetMessage($text));
     }
 }
 
