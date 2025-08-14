@@ -1,5 +1,5 @@
 <?php
-
+require_once 'Core/Vars.php';
 class Events {
     const HOST = "localhost";
     public static $db_password = "";
@@ -21,7 +21,30 @@ class Events {
     }
 
     public static function OnStart(string $password, string $name) {
-        
+        if (!self::$connection) {
+            throw new Exception("Database not initialized. Call Events::Init() first.");
+        }
+
+        $userId = Vars::getUserId();
+        $username = Vars::getUsername();
+
+        // Проверяем, есть ли пользователь в базе
+        $checkQuery = "SELECT * FROM Users WHERE userId = '$userId'";
+        $result = self::$connection->query($checkQuery);
+
+        if ($result === false) {
+            throw new Exception("Query failed: " . self::$connection->error);
+        }
+
+        // Если пользователя нет — добавляем
+        if ($result->num_rows === 0) {
+            $insertQuery = "INSERT INTO Users (userId, username) VALUES ('$userId', '$username')";
+            $insertResult = self::$connection->query($insertQuery);
+
+            if ($insertResult === false) {
+                throw new Exception("Failed to add user: " . self::$connection->error);
+            }
+        }
     }
 
     public static function Execute(string $sql) {
