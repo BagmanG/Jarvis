@@ -11,6 +11,6 @@ class StartCommand extends Command {
         //     "Привет! Это стартовое сообщение с фотографией.",
         //     "https://example.com/path/to/your/image.jpg"
         // );
-        Messages::sendText($chatId,Images::welcomeImage());
+        Messages::sendText($chatId,"123))");
     }
 }
