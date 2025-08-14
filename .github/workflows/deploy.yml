@@ -24,6 +24,8 @@ jobs:
         run: |
           echo "BOT_TOKEN=${{ secrets.BOT_TOKEN }}" > .env
           echo "AI_TOKEN=${{ secrets.AI_TOKEN }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
           # Добавьте другие переменные
 
       # 4. Деплой через FTP с удалением лишних файлов

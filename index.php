@@ -6,6 +6,7 @@ error_reporting(E_ALL);
 require_once 'Core/Init.php';
 require_once 'Core/GPT.php';
 require_once 'Core/Images.php';
+require_once 'Core/Vars.php';
 
 $content = file_get_contents("php://input");
 $update = json_decode($content, true);
@@ -18,6 +19,7 @@ GPT::Init(AI_TOKEN);
 
 // Проверяем, есть ли сообщение в обновлении
 if (isset($update["message"])) {
+    Vars::initFromUpdate($update);
     $message = $update["message"];
     $chat_id = $message["chat"]["id"];
     $text = isset($message["text"]) ? $message["text"] : "";
@@ -64,7 +66,13 @@ if (isset($update["message"])) {
         // Отправка текста помощи
         $help_text = "Это справочное сообщение.\nДоступные команды:\n/start - начать работу\n/help - получить помощь";
         sendMessage($chat_id, $help_text);
-    } elseif (stripos($text, "скажи") !== false) {
+    } 
+    elseif (strpos($text, "/test") === 0) {
+        // Отправка текста помощи
+        $help_text = Vars::getUserId()."/".Vars::getUsername();
+        sendMessage($chat_id, $help_text);
+    }
+    elseif (stripos($text, "скажи") !== false) {
         // Если в тексте есть слово "скажи" (регистронезависимо)
         sendMessage($chat_id, "не скажу");
     } else {
@@ -76,6 +84,7 @@ if (isset($update["message"])) {
 
 // Обработка callback запросов от inline кнопок
 if (isset($update["callback_query"])) {
+    Vars::initFromUpdate($update);
     $callback_query = $update["callback_query"];
     $chat_id = $callback_query["message"]["chat"]["id"];
     $data = $callback_query["data"];
