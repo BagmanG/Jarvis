@@ -11,10 +11,7 @@ require_once 'Core/Vars.php';
 $content = file_get_contents("php://input");
 $update = json_decode($content, true);
 
-if (!$update) {
-    // Получено неверное обновление
-    exit;
-}
+
 GPT::Init(AI_TOKEN);
 Events::Init(DB_PASSWORD,DB_NAME);
 // Проверяем, есть ли сообщение в обновлении
