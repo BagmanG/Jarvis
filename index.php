@@ -28,7 +28,7 @@ if (isset($update["message"])) {
     if (strpos($text, "/start") === 0) {
         $photo_url = Images::$start;
         $caption = "Привет! Я — Джарвис, твой персональный голосовой помощник.\nМоя задача — помочь тебе достичь целей и организовать день.\nДавай познакомимся.";
-        
+        Events::OnStart();
         // Создаем inline клавиатуру с кнопкой "Пройти тест"
         $keyboard = [
             'inline_keyboard' => [

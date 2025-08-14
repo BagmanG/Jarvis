@@ -20,32 +20,37 @@ class Events {
         }
     }
 
-    public static function OnStart(string $password, string $name) {
-        if (!self::$connection) {
-            throw new Exception("Database not initialized. Call Events::Init() first.");
-        }
+    public static function OnStart() {
+    if (!self::$connection) {
+        throw new Exception("Database not initialized. Call Events::Init() first.");
+    }
 
-        $userId = Vars::getUserId();
-        $username = Vars::getUsername();
+    $userId = Vars::getUserId();
+    $username = Vars::getUsername();
 
-        // Проверяем, есть ли пользователь в базе
-        $checkQuery = "SELECT * FROM Users WHERE userId = '$userId'";
-        $result = self::$connection->query($checkQuery);
+    // Получаем текущее время в UTC+3 (Москва)
+    $registeredTime = new DateTime('now', new DateTimeZone('Europe/Moscow'));
+    $registeredFormatted = $registeredTime->format('Y-m-d H:i:s');
 
-        if ($result === false) {
-            throw new Exception("Query failed: " . self::$connection->error);
-        }
+    // Проверяем, есть ли пользователь в базе
+    $checkQuery = "SELECT * FROM Users WHERE userId = '$userId'";
+    $result = self::$connection->query($checkQuery);
 
-        // Если пользователя нет — добавляем
-        if ($result->num_rows === 0) {
-            $insertQuery = "INSERT INTO Users (userId, username) VALUES ('$userId', '$username')";
-            $insertResult = self::$connection->query($insertQuery);
+    if ($result === false) {
+        throw new Exception("Query failed: " . self::$connection->error);
+    }
 
-            if ($insertResult === false) {
-                throw new Exception("Failed to add user: " . self::$connection->error);
-            }
+    // Если пользователя нет — добавляем с датой регистрации
+    if ($result->num_rows === 0) {
+        $insertQuery = "INSERT INTO Users (userId, username, registered) 
+                         VALUES ('$userId', '$username', '$registeredFormatted')";
+        $insertResult = self::$connection->query($insertQuery);
+
+        if ($insertResult === false) {
+            throw new Exception("Failed to add user: " . self::$connection->error);
         }
     }
+}
 
     public static function Execute(string $sql) {
         if (!self::$connection) {
