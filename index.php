@@ -45,11 +45,9 @@ if (isset($update["message"])) {
             // Используем API для распознавания речи (пример с OpenAI Whisper)
             try {
                 $transcription = transcribeAudio($temp_file);
-                sendMessage($chat_id, "Расшифровка голосового сообщения: " . $transcription);
-                
-                // Можно также отправить расшифровку в GPT для обработки
-                sendMessage($chat_id, "Думаю над вашим сообщением...");
+                sendMessage($chat_id, "Думаю...");
                 sendMessage($chat_id, GPT::GetMessage($transcription));
+                return;
             } catch (Exception $e) {
                 sendMessage($chat_id, "Ошибка при расшифровке голосового сообщения: " . $e->getMessage());
             }
