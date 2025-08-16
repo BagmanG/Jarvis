@@ -108,6 +108,10 @@ if (isset($update["message"])) {
         $help_text = Vars::getUserId()."/".Vars::getUsername();
         sendMessage($chat_id, $help_text);
     }
+    elseif (strpos($text, "/testVoice") === 0) {
+        // Отправка текста помощи
+        sendMessage($chat_id, "test voice");
+    }
     elseif (stripos($text, "скажи") !== false) {
         // Если в тексте есть слово "скажи" (регистронезависимо)
         sendMessage($chat_id, "не скажу");
