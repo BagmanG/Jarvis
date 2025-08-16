@@ -65,6 +65,7 @@ if (isset($update["message"])) {
         $photo_url = Images::$start;
         $caption = "Привет! Я — Джарвис, твой персональный голосовой помощник.\nМоя задача — помочь тебе достичь целей и организовать день.\nДавай познакомимся.";
         Events::OnStart();
+        Events::SetState("start");
         // Создаем inline клавиатуру с кнопкой "Пройти тест"
         $keyboard = [
             'inline_keyboard' => [
@@ -116,8 +117,21 @@ if (isset($update["message"])) {
         // Если в тексте есть слово "скажи" (регистронезависимо)
         sendMessage($chat_id, "не скажу");
     } else {
-        // Если ни одно условие не выполнено
+        $state = Events::GetState();
+        if($state == "start"){
+            Events::SetState("aboutMe");
+            Events::SetParam("name",$text);
+            sendMessage($chat_id,"Красивое имя, $text! Я запомнил). Расскажи немного о себе, чем ты занимаешься и какая у тебя самая глобальная цель.");
+            return;
+        }
+        if($state == "aboutMe"){
+            Events::SetState("menu");
+            Events::SetParam('about',$text);
+            sendMessage($chat_id,"Отлично. Теперь ты можешь пользоваться ботом. Ты можешь спрашивать у меня что угодно, а я тебе с радостью отвечу. Дополнительно ты можешь узнать введя команду /help.");
+            return;
+        }
         sendMessage($chat_id, "Думаю...");
+        GPT::InitUserData(Events::GetParam('name'),Events::GetParam('about'));
         sendMessage($chat_id, GPT::GetMessage($text));
     }
 }
@@ -130,7 +144,7 @@ if (isset($update["callback_query"])) {
     $data = $callback_query["data"];
     
     if ($data == 'start_test') {
-        sendMessage($chat_id, "Как тебя зовут?");
+        sendMessage($chat_id, "Приступим. Как тебя зовут?");
     }
 }
 

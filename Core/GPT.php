@@ -11,6 +11,10 @@ class GPT {
         self::$api_key = $key;
     }
 
+    public static function InitUserData(string $name,string $about){
+        self::$system_prompt = "Ты — Джарвис, искуственный интеллект, созданный для помощи в достижении целей. Ты отвечаешь вежливо, лаконично и по делу. Пользователя зовут '$name' поэтому всегда обращайся к нему по имени. Вот информация о пользователе: $about";
+    }
+
     public static function GetMessage(string $userMessage): string {
         // Проверка, что API ключ установлен
         if (empty(self::$api_key)) {
