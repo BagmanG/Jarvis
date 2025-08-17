@@ -46,6 +46,7 @@ if (isset($update["message"])) {
             try {
                 $transcription = transcribeAudio($temp_file);
                 sendMessage($chat_id, "Думаю...");
+                GPT::InitUserData(Events::GetParam('name'),Events::GetParam('about'));
                 sendMessage($chat_id, GPT::GetMessage($transcription));
                 return;
             } catch (Exception $e) {
