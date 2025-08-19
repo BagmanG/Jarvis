@@ -42,12 +42,25 @@ if (isset($update["message"])) {
             $temp_file = tempnam(sys_get_temp_dir(), 'voice_') . '.ogg';
             file_put_contents($temp_file, file_get_contents($voice_file_url));
             
-            // Используем API для распознавания речи (пример с OpenAI Whisper)
+            // Используем API для распознавания речи
             try {
                 $transcription = transcribeAudio($temp_file);
                 sendMessage($chat_id, "Думаю...");
-                GPT::InitUserData(Events::GetParam('name'),Events::GetParam('about'));
-                sendMessage($chat_id, GPT::GetMessage($transcription));
+                
+                // Получаем историю сообщений
+                $history = self::getMessageHistory();
+                
+                GPT::InitUserData(Events::GetParam('name'), Events::GetParam('about'));
+                $response = GPT::GetMessage($transcription, $history);
+                
+                // Добавляем сообщения в историю
+                $history = GPT::AddToHistory('user', $transcription, $history);
+                $history = GPT::AddToHistory('assistant', $response, $history);
+                
+                // Сохраняем обновленную историю
+                self::saveMessageHistory($history);
+                
+                sendMessage($chat_id, $response);
                 return;
             } catch (Exception $e) {
                 sendMessage($chat_id, "Ошибка при расшифровке голосового сообщения: " . $e->getMessage());
@@ -98,9 +111,10 @@ if (isset($update["message"])) {
         
         $context = stream_context_create($options);
         file_get_contents($url, false, $context);
-    } elseif (strpos($text, "/help") === 0) {
+    }
+    elseif (strpos($text, "/help") === 0) {
         // Отправка текста помощи
-        $help_text = "Это справочное сообщение.\nДоступные команды:\n/start - начать работу\n/help - получить помощь";
+        $help_text = "Это справочное сообщение.\nДоступные команды:\n/start - начать работу\n/help - получить помощь\n/clear - очистить историю диалога";
         sendMessage($chat_id, $help_text);
     } 
     elseif (strpos($text, "/test") === 0) {
@@ -124,11 +138,16 @@ if (isset($update["message"])) {
 
 - Укажите, если нужны скриншоты или дополнительные данные.
 
-- Отправьте сообщение — наша команда поддержки ответит вам в ближайшее время.
+- Отправьте сообщение — наша команда поддержка ответит вам в ближайшее время.
 
 ⚡ Мы работаем быстро! Обычно ответ приходит в течение 12 часов.
 
 Спасибо, что пользуетесь Jarvis! 🤖💙");
+    }
+    elseif (strpos($text, "/clear") === 0) {
+        // Очистка истории сообщений
+        self::clearMessageHistory();
+        sendMessage($chat_id, "История диалога очищена. Я забыл наш предыдущий разговор, но помню основную информацию о вас.");
     }
     elseif (stripos($text, "скажи") !== false) {
         // Если в тексте есть слово "скажи" (регистронезависимо)
@@ -147,9 +166,23 @@ if (isset($update["message"])) {
             sendMessage($chat_id,"Отлично. Теперь ты можешь пользоваться ботом. Ты можешь спрашивать у меня что угодно, а я тебе с радостью отвечу. Дополнительно ты можешь узнать введя команду /help.");
             return;
         }
+        
         sendMessage($chat_id, "Думаю...");
-        GPT::InitUserData(Events::GetParam('name'),Events::GetParam('about'));
-        sendMessage($chat_id, GPT::GetMessage($text));
+        
+        // Получаем историю сообщений
+        $history = self::getMessageHistory();
+        
+        GPT::InitUserData(Events::GetParam('name'), Events::GetParam('about'));
+        $response = GPT::GetMessage($text, $history);
+        
+        // Добавляем сообщения в историю
+        $history = GPT::AddToHistory('user', $text, $history);
+        $history = GPT::AddToHistory('assistant', $response, $history);
+        
+        // Сохраняем обновленную историю
+        self::saveMessageHistory($history);
+        
+        sendMessage($chat_id, $response);
     }
 }
 
@@ -165,9 +198,29 @@ if (isset($update["callback_query"])) {
     }
 }
 
-// Функция для транскрибации аудио (пример с OpenAI Whisper API)
+// Функция для получения истории сообщений
+function getMessageHistory(): array {
+    $messagesJson = Events::GetParam('messages');
+    if ($messagesJson) {
+        $history = json_decode($messagesJson, true);
+        return is_array($history) ? $history : [];
+    }
+    return [];
+}
+
+// Функция для сохранения истории сообщений
+function saveMessageHistory(array $history): void {
+    Events::SetParam('messages', json_encode($history));
+}
+
+// Функция для очистки истории сообщений
+function clearMessageHistory(): void {
+    Events::SetParam('messages', json_encode([]));
+}
+
+// Функция для транскрибации аудио
 function transcribeAudio($audio_file_path) {
-    $api_key = AI_TOKEN; // Используем тот же токен, что и для GPT
+    $api_key = AI_TOKEN;
     
     $url = 'https://api.aitunnel.ru/v1/audio/transcriptions';
     

@@ -11,29 +11,41 @@ class GPT {
         self::$api_key = $key;
     }
 
-    public static function InitUserData(string $name,string $about){
+    public static function InitUserData(string $name, string $about){
         self::$system_prompt = "Ты — Джарвис, искуственный интеллект, созданный для помощи в достижении целей. Ты отвечаешь вежливо, лаконично и по делу. Ты всегда отвечаешь без форматирования, только текст! Пользователя зовут '$name' поэтому всегда обращайся к нему по имени. Вот информация о пользователе: $about";
     }
 
-    public static function GetMessage(string $userMessage): string {
+    public static function GetMessage(string $userMessage, array $history = []): string {
         // Проверка, что API ключ установлен
         if (empty(self::$api_key)) {
             throw new Exception('API key is not set. Please call GPT::Init() first.');
         }
 
+        // Формируем массив сообщений
+        $messages = [
+            [
+                'role' => 'system',
+                'content' => self::$system_prompt
+            ]
+        ];
+
+        // Добавляем историю сообщений, если есть
+        if (!empty($history)) {
+            foreach ($history as $message) {
+                $messages[] = $message;
+            }
+        }
+
+        // Добавляем текущее сообщение пользователя
+        $messages[] = [
+            'role' => 'user',
+            'content' => $userMessage
+        ];
+
         $data_chat = [
             'model' => self::$model,
             'max_tokens' => self::$max_tokens,
-            'messages' => [
-                [
-                    'role' => 'system',  // Системное сообщение задаёт поведение модели
-                    'content' => self::$system_prompt
-                ],
-                [
-                    'role' => 'user',
-                    'content' => $userMessage
-                ]
-            ]
+            'messages' => $messages
         ];
 
         $ch = curl_init(self::$api_url);
@@ -62,5 +74,20 @@ class GPT {
         }
         
         throw new Exception('Invalid response structure');
+    }
+
+    // Функция для добавления сообщения в историю
+    public static function AddToHistory(string $role, string $content, array &$history, int $maxMessages = 10): array {
+        $history[] = [
+            'role' => $role,
+            'content' => $content
+        ];
+
+        // Ограничиваем размер истории
+        if (count($history) > $maxMessages * 2) { // *2 потому что пары user/assistant
+            $history = array_slice($history, -($maxMessages * 2));
+        }
+
+        return $history;
     }
 }
