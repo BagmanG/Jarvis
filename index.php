@@ -130,7 +130,7 @@ if (isset($update["message"])) {
         sendMessage($chat_id, $help_text);
     } 
     elseif (strpos($text, "/test") === 0) {
-        $help_text = Vars::getUserId()."/".Vars::getUsername();
+        $help_text = Vars::getUserId()."/".Vars::getChatId();
         sendMessage($chat_id, $help_text);
     }
     elseif (strpos($text, "/testVoice") === 0) {
