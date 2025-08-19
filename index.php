@@ -172,17 +172,19 @@ if (isset($update["message"])) {
         // Получаем историю сообщений
         try{
         $history = self::getMessageHistory();
-        
+        sendMessage($chat_id, "1");
         GPT::InitUserData(Events::GetParam('name'), Events::GetParam('about'));
+        sendMessage($chat_id, "2");
         $response = GPT::GetMessage($text, $history);
-        
+        sendMessage($chat_id, "3");
         // Добавляем сообщения в историю
         $history = GPT::AddToHistory('user', $text, $history);
+        sendMessage($chat_id, "4");
         $history = GPT::AddToHistory('assistant', $response, $history);
-        
+        sendMessage($chat_id, "5");
         // Сохраняем обновленную историю
         self::saveMessageHistory($history);
-        
+        sendMessage($chat_id, "6");
         sendMessage($chat_id, $response);
         }catch(Exception $e){
             sendMessage($chat_id, $e);
