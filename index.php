@@ -390,6 +390,8 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] == SUPPORT_CHA
                 }
             }
         }
+    }else{
+         sendMessage(SUPPORT_CHAT_ID, "Чтобы ответить на вопрос пользователя, нужно отправить сообщение как ответ.");
     }
 }
 ?>
