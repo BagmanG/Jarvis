@@ -8,19 +8,30 @@ require_once 'Core/GPT.php';
 require_once 'Core/Images.php';
 require_once 'Core/Vars.php';
 require_once 'Core/Events.php';
+
+// Функция для логирования ошибок
+function logError($message) {
+    error_log(date('Y-m-d H:i:s') . ' - ' . $message . PHP_EOL, 3, 'error.log');
+}
+
 $content = file_get_contents("php://input");
 $update = json_decode($content, true);
 
 if (!$update) {
-    // Получено неверное обновление
+    logError('Invalid update received: ' . $content);
     exit;
 }
-GPT::Init(AI_TOKEN);
-Events::Init(DB_PASSWORD,DB_NAME);
+
+try {
+    GPT::Init(AI_TOKEN);
+    Events::Init(DB_PASSWORD, DB_NAME);
+} catch (Exception $e) {
+    logError('Initialization error: ' . $e->getMessage());
+    exit;
+}
 
 // Проверяем, есть ли сообщение в обновлении
 if (isset($update["message"])) {
-     try{
     Vars::initFromUpdate($update);
     $message = $update["message"];
     $chat_id = $message["chat"]["id"];
@@ -48,8 +59,8 @@ if (isset($update["message"])) {
                 $transcription = transcribeAudio($temp_file);
                 sendMessage($chat_id, "Думаю...");
                 
-                // Получаем историю сообщений
-                $history = self::getMessageHistory();
+                // Получаем историю сообщений - ИСПРАВЛЕНО: убрано self::
+                $history = getMessageHistory();
                 
                 GPT::InitUserData(Events::GetParam('name'), Events::GetParam('about'));
                 $response = GPT::GetMessage($transcription, $history);
@@ -59,11 +70,12 @@ if (isset($update["message"])) {
                 $history = GPT::AddToHistory('assistant', $response, $history);
                 
                 // Сохраняем обновленную историю
-                self::saveMessageHistory($history);
+                saveMessageHistory($history);
                 
                 sendMessage($chat_id, $response);
                 return;
             } catch (Exception $e) {
+                logError('Voice transcription error: ' . $e->getMessage());
                 sendMessage($chat_id, "Ошибка при расшифровке голосового сообщения: " . $e->getMessage());
             }
             
@@ -114,21 +126,17 @@ if (isset($update["message"])) {
         file_get_contents($url, false, $context);
     }
     elseif (strpos($text, "/help") === 0) {
-        // Отправка текста помощи
         $help_text = "Это справочное сообщение.\nДоступные команды:\n/start - начать работу\n/help - получить помощь\n/clear - очистить историю диалога";
         sendMessage($chat_id, $help_text);
     } 
     elseif (strpos($text, "/test") === 0) {
-        // Отправка текста помощи
         $help_text = Vars::getUserId()."/".Vars::getUsername();
         sendMessage($chat_id, $help_text);
     }
     elseif (strpos($text, "/testVoice") === 0) {
-        // Отправка текста помощи
         sendMessage($chat_id, "test voice");
     }
     elseif (strpos($text, "/support") === 0) {
-        // Отправка текста помощи
         sendMessage($chat_id, "🛠 Техническая поддержка Jarvis
 
 Если у вас возник вопрос, проблема или предложение по работе бота, напишите сообщение ниже.
@@ -146,12 +154,16 @@ if (isset($update["message"])) {
 Спасибо, что пользуетесь Jarvis! 🤖💙");
     }
     elseif (strpos($text, "/clear") === 0) {
-        // Очистка истории сообщений
-        self::clearMessageHistory();
-        sendMessage($chat_id, "История диалога очищена. Я забыл наш предыдущий разговор, но помню основную информацию о вас.");
+        // Очистка истории сообщений - ИСПРАВЛЕНО: убрано self::
+        try {
+            clearMessageHistory();
+            sendMessage($chat_id, "✅ История диалога очищена. Я забыл наш предыдущий разговор, но помню основную информацию о вас.");
+        } catch (Exception $e) {
+            logError('Clear history error: ' . $e->getMessage());
+            sendMessage($chat_id, "❌ Произошла ошибка при очистке истории. Попробуйте позже.");
+        }
     }
     elseif (stripos($text, "скажи") !== false) {
-        // Если в тексте есть слово "скажи" (регистронезависимо)
         sendMessage($chat_id, "не скажу");
     } else {
         $state = Events::GetState();
@@ -168,29 +180,29 @@ if (isset($update["message"])) {
             return;
         }
         
-        sendMessage($chat_id, "Думаю....");
-        sendMessage($chat_id, "0");
-        // Получаем историю сообщений
-            sendMessage($chat_id, "00");
-        $history = self::getMessageHistory();
-        sendMessage($chat_id, "1");
-        GPT::InitUserData(Events::GetParam('name'), Events::GetParam('about'));
-        sendMessage($chat_id, "2");
-        $response = GPT::GetMessage($text, $history);
-        sendMessage($chat_id, "3");
-        // Добавляем сообщения в историю
-        $history = GPT::AddToHistory('user', $text, $history);
-        sendMessage($chat_id, "4");
-        $history = GPT::AddToHistory('assistant', $response, $history);
-        sendMessage($chat_id, "5");
-        // Сохраняем обновленную историю
-        self::saveMessageHistory($history);
-        sendMessage($chat_id, "6");
-        sendMessage($chat_id, $response);
-    }
-    }catch(Exception $e){
-            sendMessage($chat_id, $e);
+        sendMessage($chat_id, "Думаю...");
+        
+        try {
+            // Получаем историю сообщений - ИСПРАВЛЕНО: убрано self::
+            $history = getMessageHistory();
+            
+            GPT::InitUserData(Events::GetParam('name'), Events::GetParam('about'));
+            $response = GPT::GetMessage($text, $history);
+            
+            // Добавляем сообщения в историю
+            $history = GPT::AddToHistory('user', $text, $history);
+            $history = GPT::AddToHistory('assistant', $response, $history);
+            
+            // Сохраняем обновленную историю - ИСПРАВЛЕНО: убрано self::
+            saveMessageHistory($history);
+            
+            sendMessage($chat_id, $response);
+            
+        } catch (Exception $e) {
+            logError('GPT processing error: ' . $e->getMessage());
+            sendMessage($chat_id, "❌ Извините, произошла ошибка при обработке запроса. Попробуйте позже или обратитесь в поддержку /support");
         }
+    }
 }
 
 // Обработка callback запросов от inline кнопок
@@ -207,22 +219,36 @@ if (isset($update["callback_query"])) {
 
 // Функция для получения истории сообщений
 function getMessageHistory(): array {
-    $messagesJson = Events::GetParam('messages');
-    if ($messagesJson) {
-        $history = json_decode($messagesJson, true);
-        return is_array($history) ? $history : [];
+    try {
+        $messagesJson = Events::GetParam('messages');
+        if ($messagesJson) {
+            $history = json_decode($messagesJson, true);
+            return is_array($history) ? $history : [];
+        }
+        return [];
+    } catch (Exception $e) {
+        logError('Get message history error: ' . $e->getMessage());
+        return [];
     }
-    return [];
 }
 
 // Функция для сохранения истории сообщений
 function saveMessageHistory(array $history): void {
-    Events::SetParam('messages', json_encode($history));
+    try {
+        Events::SetParam('messages', json_encode($history));
+    } catch (Exception $e) {
+        logError('Save message history error: ' . $e->getMessage());
+    }
 }
 
 // Функция для очистки истории сообщений
 function clearMessageHistory(): void {
-    Events::SetParam('messages', json_encode([]));
+    try {
+        Events::SetParam('messages', json_encode([]));
+    } catch (Exception $e) {
+        logError('Clear message history error: ' . $e->getMessage());
+        throw $e;
+    }
 }
 
 // Функция для транскрибации аудио
