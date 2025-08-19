@@ -31,7 +31,7 @@ try {
 }
 
 // Проверяем, есть ли сообщение в обновлении
-if (isset($update["message"])) {
+if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHAT_ID) {
     Vars::initFromUpdate($update);
     $message = $update["message"];
     $chat_id = $message["chat"]["id"];
