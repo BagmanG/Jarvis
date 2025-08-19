@@ -20,6 +20,7 @@ Events::Init(DB_PASSWORD,DB_NAME);
 
 // Проверяем, есть ли сообщение в обновлении
 if (isset($update["message"])) {
+     try{
     Vars::initFromUpdate($update);
     $message = $update["message"];
     $chat_id = $message["chat"]["id"];
@@ -170,7 +171,6 @@ if (isset($update["message"])) {
         sendMessage($chat_id, "Думаю....");
         sendMessage($chat_id, "0");
         // Получаем историю сообщений
-        try{
             sendMessage($chat_id, "00");
         $history = self::getMessageHistory();
         sendMessage($chat_id, "1");
@@ -187,10 +187,10 @@ if (isset($update["message"])) {
         self::saveMessageHistory($history);
         sendMessage($chat_id, "6");
         sendMessage($chat_id, $response);
-        }catch(Exception $e){
+    }
+    }catch(Exception $e){
             sendMessage($chat_id, $e);
         }
-    }
 }
 
 // Обработка callback запросов от inline кнопок
