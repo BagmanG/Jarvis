@@ -167,10 +167,11 @@ if (isset($update["message"])) {
             return;
         }
         
-        sendMessage($chat_id, "Думаю...");
-        
+        sendMessage($chat_id, "Думаю....");
+        sendMessage($chat_id, "0");
         // Получаем историю сообщений
         try{
+            sendMessage($chat_id, "00");
         $history = self::getMessageHistory();
         sendMessage($chat_id, "1");
         GPT::InitUserData(Events::GetParam('name'), Events::GetParam('about'));
