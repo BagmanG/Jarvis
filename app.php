@@ -319,10 +319,18 @@
 
     // Calendar
     function renderCalendar() {
+        // Получаем текущую дату в UTC+3
+        const nowUTC3 = getUTCDateWithOffset();
+        const todayStr = fmt(nowUTC3);
+
+        // Создаем дату для отображаемого месяца с учетом UTC+3
         const d = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-        $('#monthLabel').text(months[d.getMonth()] + ' ' + d.getFullYear());
-        const startDay = (d.getDay() + 6) % 7; // Monday first
-        const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        // Корректируем на UTC+3
+        const dUTC3 = new Date(d.getTime() + (3 * 60 * 60 * 1000));
+
+        $('#monthLabel').text(months[dUTC3.getMonth()] + ' ' + dUTC3.getFullYear());
+        const startDay = (dUTC3.getDay() + 6) % 7; // Monday first
+        const daysInMonth = new Date(dUTC3.getFullYear(), dUTC3.getMonth() + 1, 0).getDate();
         const grid = $('#calendarGrid');
         grid.empty();
 
@@ -334,8 +342,9 @@
 
         for (let i = 0; i < startDay; i++) grid.append('<div class="h-10"></div>');
         for (let day = 1; day <= daysInMonth; day++) {
-            const dateStr = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(day);
-            const isToday = dateStr === fmt(new Date());
+            // Формируем строку даты с учетом месяца и года из UTC+3 даты
+            const dateStr = dUTC3.getFullYear() + "-" + pad(dUTC3.getMonth() + 1) + "-" + pad(day);
+            const isToday = dateStr === todayStr;
             const isSelected = dateStr === fmt(selectedDate);
             const has = map[dateStr] > 0;
             const dot = has ?
@@ -346,7 +355,10 @@
                 (isToday ? 'ring-2 ring-white/30 ' : '');
             const el = $('<div class="' + cls + '"><span>' + day + '</span>' + dot + '</div>');
             el.on('click', () => {
-                selectedDate = new Date(dateStr);
+                // Создаем дату с учетом UTC+3 при клике
+                const clickedDate = new Date(dateStr + 'T00:00:00Z');
+                // Корректируем на UTC+3
+                selectedDate = new Date(clickedDate.getTime() + (3 * 60 * 60 * 1000));
                 renderCalendar();
                 updateEventCard();
             });
