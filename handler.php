@@ -247,7 +247,7 @@ class TaskHandler {
         $stmt = $this->conn->prepare("
             SELECT t.*, u.chat_id 
             FROM Tasks t
-            JOIN users u ON t.user_id = u.user_id
+            JOIN Users u ON t.user_id = u.userId
             WHERE t.reminder = ? 
             AND t.due_date = DATE(?) 
             AND t.due_time = TIME(?)
