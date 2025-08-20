@@ -301,7 +301,7 @@
     function setupDateDefaults() {
         const now = getUTCDateWithOffset();
         const today = fmt(now);
-        const time = pad(now.getHours()) + ":" + pad(now.getMinutes());
+        const time = pad(new Date().getHours()) + ":" + pad(now.getMinutes());
 
         $('input[name="due_date"]').val(today);
         $('input[name="due_time"]').val(time);
