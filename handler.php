@@ -270,7 +270,7 @@ class TaskHandler {
 
 private function calculateReminderTime($reminderType) {
     $now = new DateTime();
-    echo "Time now".$now;
+    echo "Time now: " . $now->format('Y-m-d H:i:s');
     switch ($reminderType) {
         case '30min':
             $now->modify('+30 minutes');
