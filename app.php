@@ -236,29 +236,32 @@
     function loadTasks(filter = 'all') {
         $.get(`handler.php?action=get&user_id=${currentUserId}&filter=${filter}`, function(data) {
             try {
-                console.log('Raw response:', data); // Добавьте это для отладки
+                console.log('Raw response:', data);
 
+                // Парсим JSON ответ
                 const response = JSON.parse(data);
-                if (response.tasks) {
+
+                // Проверяем наличие tasks в ответе
+                if (response.tasks !== undefined) {
                     renderTasks(response.tasks);
                 } else if (response.error) {
                     console.error('Error loading tasks:', response.error);
-                    // Уберите alert() здесь, он может мешать
+                    $('#tasksList').html('<div class="col-12 text-center text-muted">Ошибка: ' + response
+                        .error + '</div>');
+                } else {
+                    console.error('Invalid response format:', response);
                     $('#tasksList').html(
-                        '<div class="col-12 text-center text-danger">Ошибка: ' + response.error + '</div>');
+                        '<div class="col-12 text-center text-muted">Неверный формат ответа сервера</div>');
                 }
             } catch (e) {
                 console.error('JSON parse error:', e, 'Data:', data);
-                // Уберите alert() здесь
                 $('#tasksList').html(
-                    '<div class="col-12 text-center text-danger">Ошибка формата данных. Ответ сервера: ' +
-                    String(data).substring(0, 100) + '</div>');
+                '<div class="col-12 text-center text-muted">Ошибка обработки данных</div>');
             }
         }).fail(function(xhr, status, error) {
             console.error('AJAX error:', status, error);
-            // Уберите alert() здесь
-            $('#tasksList').html(
-                '<div class="col-12 text-center text-danger">Ошибка соединения: ' + xhr.status + '</div>');
+            $('#tasksList').html('<div class="col-12 text-center text-muted">Ошибка соединения: ' + xhr.status +
+                '</div>');
         });
     }
 
