@@ -254,6 +254,8 @@ class TaskHandler {
             AND status = 'pending'
         ";
         
+        echo "sql :".$sql;
+
         $result = $this->conn->query($sql);
         
         if ($result) {
