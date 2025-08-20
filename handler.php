@@ -13,7 +13,7 @@ class TaskHandler {
     private $timezone = 'Europe/Moscow'; // UTC+3
 
     public function __construct() {
-        $this->conn = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
+        $this->conn = new mysqli("localhost", DB_USER, DB_PASSWORD, DB_NAME);
         if ($this->conn->connect_error) {
             die(json_encode(['error' => 'Database connection failed']));
         }
