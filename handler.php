@@ -242,6 +242,7 @@ class TaskHandler {
     
     foreach ($reminderTypes as $reminderType) {
         $reminderTime = $this->calculateReminderTime($reminderType);
+        echo "Time".$reminderTime;
         $timeWindowStart = date('Y-m-d H:i:s', strtotime($reminderTime) - 40);
         $timeWindowEnd = date('Y-m-d H:i:s', strtotime($reminderTime) + 40);
         
