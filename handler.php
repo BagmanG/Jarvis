@@ -238,34 +238,48 @@ class TaskHandler {
     }
 
     private function getTasksForReminder() {
-        $tasks = [];
-        $reminderTypes = ['30min', '5min', '1min'];
+    $tasks = [];
+    $reminderTypes = ['30min', '5min', '1min'];
+    
+    foreach ($reminderTypes as $reminderType) {
+        $reminderTime = $this->calculateReminderTime($reminderType);
         
-        foreach ($reminderTypes as $reminderType) {
-            $reminderTime = $this->calculateReminderTime($reminderType);
-            
-            $stmt = $this->conn->prepare("
-                SELECT t.*, u.chat_id 
-                FROM Tasks t
-                JOIN users u ON t.user_id = u.user_id
-                WHERE t.reminder = ? 
-                AND t.due_date = DATE(?) 
-                AND t.due_time = TIME(?)
-                AND t.reminder_sent = FALSE
-                AND t.status = 'pending'
-            ");
-            
-            $stmt->bind_param("sss", $reminderType, $reminderTime, $reminderTime);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            
-            while ($task = $result->fetch_assoc()) {
-                $tasks[] = $task;
-            }
+        $stmt = $this->conn->prepare("
+            SELECT t.*, u.chat_id 
+            FROM Tasks t
+            JOIN users u ON t.user_id = u.user_id
+            WHERE t.reminder = ? 
+            AND t.due_date = DATE(?) 
+            AND t.due_time = TIME(?)
+            AND t.reminder_sent = FALSE
+            AND t.status = 'pending'
+        ");
+        
+        // Проверяем, успешно ли подготовлен запрос
+        if ($stmt === false) {
+            error_log("Prepare failed: " . $this->conn->error);
+            continue; // Пропускаем этот тип напоминания
         }
         
-        return $tasks;
+        $stmt->bind_param("sss", $reminderType, $reminderTime, $reminderTime);
+        
+        if (!$stmt->execute()) {
+            error_log("Execute failed: " . $stmt->error);
+            $stmt->close();
+            continue;
+        }
+        
+        $result = $stmt->get_result();
+        
+        while ($task = $result->fetch_assoc()) {
+            $tasks[] = $task;
+        }
+        
+        $stmt->close();
     }
+    
+    return $tasks;
+}
 
     private function calculateReminderTime($reminderType) {
         $now = new DateTime();
