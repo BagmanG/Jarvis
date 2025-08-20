@@ -230,24 +230,29 @@
     function loadTasks(filter = 'all') {
         $.get(`handler.php?action=get&user_id=${currentUserId}&filter=${filter}`, function(data) {
             try {
+                console.log('Raw response:', data); // Добавьте это для отладки
+
                 const response = JSON.parse(data);
                 if (response.tasks) {
                     renderTasks(response.tasks);
                 } else if (response.error) {
                     console.error('Error loading tasks:', response.error);
-                    alert(response.error);
+                    // Уберите alert() здесь, он может мешать
                     $('#tasksList').html(
-                        '<div class="col-12 text-center text-muted">Ошибка загрузки задач</div>');
+                        '<div class="col-12 text-center text-danger">Ошибка: ' + response.error + '</div>');
                 }
             } catch (e) {
-                console.error('JSON parse error:', e, data);
-                alert(e);
-                $('#tasksList').html('<div class="col-12 text-center text-muted">Ошибка загрузки задач</div>');
+                console.error('JSON parse error:', e, 'Data:', data);
+                // Уберите alert() здесь
+                $('#tasksList').html(
+                    '<div class="col-12 text-center text-danger">Ошибка формата данных. Ответ сервера: ' +
+                    String(data).substring(0, 100) + '</div>');
             }
         }).fail(function(xhr, status, error) {
             console.error('AJAX error:', status, error);
-            alert(error);
-            $('#tasksList').html('<div class="col-12 text-center text-muted">Ошибка соединения</div>');
+            // Уберите alert() здесь
+            $('#tasksList').html(
+                '<div class="col-12 text-center text-danger">Ошибка соединения: ' + xhr.status + '</div>');
         });
     }
 
