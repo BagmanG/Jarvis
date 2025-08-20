@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram User Info</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 
 <body>
@@ -23,7 +23,7 @@
             </div>
         </div>
     </div>
-    <script src="app.js"></script>
+    <script src="assets/js/app.js"></script>
 </body>
 
 </html>
