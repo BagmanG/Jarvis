@@ -4,7 +4,11 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 require_once 'config.php';
-
+echo DB_NAME;
+echo DB_PASSWORD;
+echo BOT_TOKEN;
+echo DB_USER;
+exit;
 // Логирование запросов
 file_put_contents('/tmp/debug.log', date('Y-m-d H:i:s') . " - " . print_r($_REQUEST, true) . "\n", FILE_APPEND);
 
