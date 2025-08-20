@@ -406,7 +406,7 @@
                     console.error('JSON parse error:', e);
                     tg.showPopup({
                         title: 'Ошибка',
-                        message: 'Ошибка сервера'
+                        message: 'Ошибка сервера:' + e
                     });
                 }
             },
