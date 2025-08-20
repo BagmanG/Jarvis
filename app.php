@@ -282,13 +282,8 @@
         $('#searchInput').on('input', searchTasks);
     }
 
-    function getTodayUTC3Date() {
-        const now = new Date();
-        return new Date(now.getTime() + (3 * 60 * 60 * 1000));
-    }
-
     function setupDateDefaults() {
-        const now = getTodayUTC3Date();
+        const now = new Date();
         const today = fmt(now);
         const time = pad(now.getHours()) + ":" + pad(now.getMinutes());
         $('input[name="due_date"]').val(today);
@@ -383,8 +378,8 @@
     }
 
     function renderBuckets(tasks) {
-        const todayStr = fmt(getTodayUTC3Date(););
-        const tomorrowStr = fmt(new Date(Date.now() + 86400000 + (3 * 60 * 60 * 1000)));
+        const todayStr = fmt(new Date());
+        const tomorrowStr = fmt(new Date(Date.now() + 86400000));
         const buckets = {
             'Сегодня': tasks.filter(t => t.due_date === todayStr),
             'Завтра': tasks.filter(t => t.due_date === tomorrowStr),
