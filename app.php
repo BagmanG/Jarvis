@@ -46,49 +46,11 @@
     <div id="usercard">
         <!--Карта профиля, человека, который к нам обратился-->
     </div>
-    <p>Just text</p>
-    <!--Просто текст для проверки-->
-    <a class="link" href="https://mihailgok.ru">Link</a>
-    <!--Просто ссылка для проверки-->
-    <p class="hint">Some little hint</p>
-    <!--Просто текст-подсказка для проверки-->
-    <button id="btn" class="button">Show/Hide Main Button</button>
-    <!--Кнопка, чтобы скрыть / показать основную кнопку-->
-    <button id="btnED" class="button">Enable/Disable Main Button</button>
-    <!--Кнопка, чтобы сделать кнопку активной/неактивной-->
+
 </body>
 <script>
 let tg = window.Telegram.WebApp;
 tg.expand(); //расширяем на все окно  
-
-tg.MainButton.text = "Changed Text"; //изменяем текст кнопки 
-tg.MainButton.setText("Changed Text1"); //изменяем текст кнопки иначе
-tg.MainButton.textColor = "#F55353"; //изменяем цвет текста кнопки
-tg.MainButton.color = "#143F6B"; //изменяем цвет бэкграунда кнопки
-tg.MainButton.setParams({
-    "color": "#143F6B"
-}); //так изменяются все параметры 
-btn.addEventListener('click', function() { //вешаем событие на нажатие html-кнопки
-    if (tg.MainButton.isVisible) { //если кнопка показана 
-        tg.MainButton.hide() //скрываем кнопку 
-    } else { //иначе
-        tg.MainButton.show() //показываем 
-    }
-});
-let btnED = document.getElementById("btnED"); //получаем кнопку активировать/деактивировать
-btnED.addEventListener('click', function() { //вешаем событие на нажатие html-кнопки
-    if (tg.MainButton.isActive) { //если кнопка показана 
-        tg.MainButton.setParams({
-            "color": "#E0FFFF"
-        }); //меняем цвет
-        tg.MainButton.disable() //скрываем кнопку 
-    } else { //иначе
-        tg.MainButton.setParams({
-            "color": "#143F6B"
-        }); //меняем цвет
-        tg.MainButton.enable() //показываем 
-    }
-});
 
 let usercard = document.getElementById("usercard"); //получаем блок usercard 
 
