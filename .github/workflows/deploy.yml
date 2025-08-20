@@ -2,18 +2,21 @@ name: Deploy PHP Telegram Bot via FTP
 
 on:
   push:
-    branches: [ main,refactor ]
+    branches: [ main, refactor ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
- 
+    timeout-minutes: 10
+
     steps:
-      # 1. Клонируем репозиторий
+      # 1. Клонируем только последний коммит
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
-      # 2. Устанавливаем PHP (если нужны проверки/зависимости)
+      # 2. Устанавливаем PHP
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -22,31 +25,32 @@ jobs:
       # 3. Создаем .env из Secrets
       - name: Create .env file
         run: |
-          echo "BOT_TOKEN=${{ secrets.BOT_TOKEN }}" > .env
-          echo "AI_TOKEN=${{ secrets.AI_TOKEN }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-          echo "SUPPORT_CHAT_ID=${{ secrets.SUPPORT_CHAT_ID }}" >> .env
-          # Добавьте другие переменные
+          cat > .env << EOF
+          BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+          AI_TOKEN=${{ secrets.AI_TOKEN }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          SUPPORT_CHAT_ID=${{ secrets.SUPPORT_CHAT_ID }}
+          EOF
 
-      # 4. Деплой через FTP с удалением лишних файлов
+      # 4. Деплой через FTP с правильными настройками
       - name: FTP Deploy
         uses: SamKirkland/FTP-Deploy-Action@v4.3.0
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./             
+          local-dir: ./
           server-dir: ./
           exclude: |
-            **/.git*
-            **/.github/
+            **/.git
+            **/.git/**
+            **/.github/**
             **/.gitignore
             **/.gitattributes
             **/.gitmodules
             **/README.md
-            dangerous-clean-slate: false  # Безопаснее чем true
+          state-name: .ftp-deploy-state  # Ключевой параметр для инкрементального деплоя
+          dangerous-clean-slate: false   # НЕ удалять всё на сервере
+          dry-run: false
           log-level: verbose
-          # Оптимизация скорости
-          ftp-sync: true
-          state-name: ftp-deploy-state.json
