@@ -242,40 +242,41 @@ class TaskHandler {
     $reminderTypes = ['30min', '5min', '1min'];
     
     foreach ($reminderTypes as $reminderType) {
-        $reminderTime = $this->calculateReminderTime($reminderType);
-        
-        $stmt = $this->conn->prepare("
-            SELECT t.*
-            FROM Tasks t
-            JOIN Users u ON t.user_id = u.userId
-            WHERE t.reminder = ? 
-            AND t.due_date = DATE(?) 
-            AND t.due_time = TIME(?)
-            AND t.reminder_sent = FALSE
-            AND t.status = 'pending'
-        ");
-        
-        // Проверяем, успешно ли подготовлен запрос
-        if ($stmt === false) {
-            error_log("Prepare failed: " . $this->conn->error);
-            continue; // Пропускаем этот тип напоминания
-        }
-        
-        $stmt->bind_param("sss", $reminderType, $reminderTime, $reminderTime);
-        
-        if (!$stmt->execute()) {
-            error_log("Execute failed: " . $stmt->error);
+        try {
+            $reminderTime = $this->calculateReminderTime($reminderType);
+            
+            $stmt = $this->conn->prepare("
+                SELECT t.*
+                FROM Tasks t
+                WHERE t.reminder = ? 
+                AND DATE(t.due_date) = DATE(?)
+                AND TIME(t.due_time) = TIME(?)
+                AND t.reminder_sent = FALSE
+                AND t.status = 'pending'
+            ");
+            
+            if ($stmt === false) {
+                throw new Exception("Prepare failed: " . $this->conn->error);
+            }
+            
+            $stmt->bind_param("sss", $reminderType, $reminderTime, $reminderTime);
+            
+            if (!$stmt->execute()) {
+                throw new Exception("Execute failed: " . $stmt->error);
+            }
+            
+            $result = $stmt->get_result();
+            
+            while ($task = $result->fetch_assoc()) {
+                $tasks[] = $task;
+            }
+            
             $stmt->close();
+            
+        } catch (Exception $e) {
+            error_log("Error processing reminder type {$reminderType}: " . $e->getMessage());
             continue;
         }
-        
-        $result = $stmt->get_result();
-        
-        while ($task = $result->fetch_assoc()) {
-            $tasks[] = $task;
-        }
-        
-        $stmt->close();
     }
     
     return $tasks;
