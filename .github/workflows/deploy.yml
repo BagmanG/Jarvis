@@ -2,7 +2,7 @@ name: Deploy PHP Telegram Bot via FTP
 
 on:
   push:
-    branches: [ main,voice-test ]
+    branches: [ main,refactor ]
 
 jobs:
   deploy:
