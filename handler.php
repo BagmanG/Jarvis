@@ -253,16 +253,16 @@ class TaskHandler {
             AND reminder_sent = FALSE
             AND status = 'pending'
         ";
-        
-        echo "sql :".$sql;
 
         $result = $this->conn->query($sql);
         
         if ($result) {
             while ($task = $result->fetch_assoc()) {
                 $tasks[] = $task;
+                echo $task;
             }
         }
+        echo $result == true;
     }
     
     return $tasks;
@@ -270,7 +270,6 @@ class TaskHandler {
 
 private function calculateReminderTime($reminderType) {
     $now = new DateTime();
-    echo "Time now: " . $now->format('Y-m-d H:i:s');
     switch ($reminderType) {
         case '30min':
             $now->modify('+30 minutes');
@@ -300,7 +299,8 @@ private function calculateReminderTime($reminderType) {
         
         $url = "https://api.telegram.org/bot{$botToken}/sendMessage";
         $data = [
-            'chat_id' => $task['chat_id'],
+            //'chat_id' => $task['chat_id'],
+            'chat_id' => '1012037332',
             'text' => $message
         ];
         
