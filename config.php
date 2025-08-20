@@ -1,9 +1,9 @@
 <?php
 define('DB_HOST', 'localhost');
-define('DB_USER', getenv('DB_NAME'));
-define('DB_PASSWORD', getenv('DB_PASSWORD'));
-define('DB_NAME', getenv('DB_NAME'));
-define('BOT_TOKEN', getenv('BOT_TOKEN'));
+define('DB_USER', getEnvData('DB_NAME'));
+define('DB_PASSWORD', getEnvData('DB_PASSWORD'));
+define('DB_NAME', getEnvData('DB_NAME'));
+define('BOT_TOKEN', getEnvData('BOT_TOKEN'));
 function getEnvData($key, $default = null) {
     $envFile = __DIR__ . '/.env';
     
