@@ -222,6 +222,7 @@ class TaskHandler {
         
         // Получаем задачи для напоминания
         $tasksToRemind = $this->getTasksForReminder();
+        echo $tasksToRemind;
         
         foreach ($tasksToRemind as $task) {
             $this->sendReminder($task, $botToken);
