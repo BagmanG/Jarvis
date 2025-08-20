@@ -13,12 +13,12 @@ class TaskHandler {
     private $timezone = 'Europe/Moscow'; // UTC+3
 
     public function __construct() {
-        $this->conn = new mysqli("localhost", DB_USER, DB_PASSWORD, DB_NAME);
-        if ($this->conn->connect_error) {
-            die(json_encode(['error' => 'Database connection failed']));
-        }
-        date_default_timezone_set($this->timezone);
+    $this->conn = new mysqli("localhost", DB_USER, DB_PASSWORD, DB_NAME);
+    if ($this->conn->connect_error) {
+        throw new Exception('Database connection failed: ' . $this->conn->connect_error);
     }
+    date_default_timezone_set($this->timezone);
+}
 
     public function handleRequest() {
         $action = $_POST['action'] ?? $_GET['action'] ?? '';
@@ -353,6 +353,18 @@ class TaskHandler {
 }
 
 // Создаем экземпляр и обрабатываем запрос
-$handler = new TaskHandler();
-echo $handler->handleRequest();
+// Создаем экземпляр и обрабатываем запрос
+try {
+    $handler = new TaskHandler();
+    echo $handler->handleRequest();
+} catch (Exception $e) {
+    // Логируем ошибку
+    file_put_contents('app_error.log', date('Y-m-d H:i:s') . " - Error: " . $e->getMessage() . "\n", FILE_APPEND);
+    
+    // Возвращаем JSON с ошибкой
+    echo json_encode([
+        'error' => 'Server error', 
+        'message' => $e->getMessage()
+    ]);
+}
 ?>
