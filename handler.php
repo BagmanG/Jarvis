@@ -253,6 +253,7 @@ class TaskHandler {
             AND reminder_sent = FALSE
             AND status = 'pending'
         ";
+        echo $sql;
         $result = $this->conn->query($sql);
         
         if ($result) {
