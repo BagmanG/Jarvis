@@ -631,6 +631,7 @@
     }
 
     function toggleTaskStatus(taskId, currentStatus) {
+        console.log("Toggled");
         const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
         const formData = new FormData();
         formData.append('user_id', currentUserId);
@@ -645,6 +646,8 @@
             success: function(result) {
                 if (result.success) {
                     loadTasks();
+                } else {
+                    console.log("Error:" + result.error);
                 }
             }
         });
