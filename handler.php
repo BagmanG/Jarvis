@@ -240,36 +240,27 @@ class TaskHandler {
     $tasks = [];
     $reminderTypes = ['30min', '5min', '1min'];
     
-    try {
-        foreach ($reminderTypes as $reminderType) {
-            $reminderTime = $this->calculateReminderTime($reminderType);
-            $timeWindowStart = date('Y-m-d H:i:s', strtotime($reminderTime) - 40); // 30 секунд до
-            $timeWindowEnd = date('Y-m-d H:i:s', strtotime($reminderTime) + 40);   // 30 секунд после
-            
-            $sql = "
-                SELECT *
-                FROM Tasks 
-                WHERE reminder = ? 
-                AND due_date_time BETWEEN ? AND ?
-                AND reminder_sent = FALSE
-                AND status = 'pending'
-            ";
-            
-            // Используем подготовленные выражения для безопасности
-            $stmt = $this->conn->prepare($sql);
-            $stmt->bind_param('sss', $reminderType, $timeWindowStart, $timeWindowEnd);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            
-            if ($result) {
-                while ($task = $result->fetch_assoc()) {
-                    $tasks[] = $task;
-                }
+    foreach ($reminderTypes as $reminderType) {
+        $reminderTime = $this->calculateReminderTime($reminderType);
+        $timeWindowStart = date('Y-m-d H:i:s', strtotime($reminderTime) - 40);
+        $timeWindowEnd = date('Y-m-d H:i:s', strtotime($reminderTime) + 40);
+        
+        $sql = "
+            SELECT *
+            FROM Tasks 
+            WHERE reminder = '$reminderType' 
+            AND due_date_time BETWEEN '$timeWindowStart' AND '$timeWindowEnd'
+            AND reminder_sent = FALSE
+            AND status = 'pending'
+        ";
+        
+        $result = $this->conn->query($sql);
+        
+        if ($result) {
+            while ($task = $result->fetch_assoc()) {
+                $tasks[] = $task;
             }
-            $stmt->close();
         }
-    } catch(Exception $e) {
-        error_log("Execute failed: " . $e->getMessage());
     }
     
     return $tasks;
