@@ -1,6 +1,7 @@
 <?php
 // cron.php
 require_once 'config.php';
+$_GET['action'] = 'cron';
 require_once 'handler.php';
 
 // Этот файл будет запускаться cron job каждую минуту
