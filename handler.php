@@ -1,6 +1,13 @@
 <?php
+<?php
 header('Content-Type: application/json');
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once 'config.php';
+
+// Логирование запросов
+file_put_contents('/tmp/debug.log', date('Y-m-d H:i:s') . " - " . print_r($_REQUEST, true) . "\n", FILE_APPEND);
 
 class TaskHandler {
     private $conn;
@@ -41,29 +48,40 @@ class TaskHandler {
     }
 
     private function addTask($userId) {
-        $data = json_decode(file_get_contents('php://input'), true);
-        
-        $stmt = $this->conn->prepare("
-            INSERT INTO Tasks (user_id, title, description, due_date, due_time, priority, reminder)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ");
-        
-        $stmt->bind_param("issssss", 
-            $userId,
-            $data['title'],
-            $data['description'],
-            $data['due_date'],
-            $data['due_time'],
-            $data['priority'],
-            $data['reminder']
-        );
+    // Получаем данные из POST
+    $title = $_POST['title'] ?? '';
+    $description = $_POST['description'] ?? '';
+    $due_date = $_POST['due_date'] ?? '';
+    $due_time = $_POST['due_time'] ?? '';
+    $priority = $_POST['priority'] ?? 'medium';
+    $reminder = $_POST['reminder'] ?? 'none';
 
-        if ($stmt->execute()) {
-            return json_encode(['success' => true, 'task_id' => $stmt->insert_id]);
-        } else {
-            return json_encode(['error' => 'Failed to add task']);
-        }
+    // Валидация
+    if (empty($title) || empty($due_date) || empty($due_time)) {
+        return json_encode(['error' => 'Заполните обязательные поля']);
     }
+
+    $stmt = $this->conn->prepare("
+        INSERT INTO Tasks (user_id, title, description, due_date, due_time, priority, reminder)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ");
+    
+    $stmt->bind_param("issssss", 
+        $userId,
+        $title,
+        $description,
+        $due_date,
+        $due_time,
+        $priority,
+        $reminder
+    );
+
+    if ($stmt->execute()) {
+        return json_encode(['success' => true, 'task_id' => $stmt->insert_id]);
+    } else {
+        return json_encode(['error' => 'Failed to add task: ' . $stmt->error]);
+    }
+}
 
     private function getTasks($userId) {
         $filter = $_GET['filter'] ?? 'all';

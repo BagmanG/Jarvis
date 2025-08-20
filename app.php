@@ -202,7 +202,6 @@
     $(document).ready(function() {
         loadTasks();
         setupDateDefaults();
-        // Сохраняем пользователя если нужно
         saveUserIfNeeded();
     });
 
@@ -219,17 +218,33 @@
         // Сохраняем пользователя в базу для напоминаний
         $.post('handler.php?action=save_user', {
             user_id: currentUserId,
-            first_name: tg.initDataUnsafe.user.first_name,
-            last_name: tg.initDataUnsafe.user.last_name,
-            username: tg.initDataUnsafe.user.username,
-            chat_id: tg.initDataUnsafe.user.id // Для WebApp chat_id = user_id
+            chat_id: currentUserId,
+            first_name: tg.initDataUnsafe.user.first_name || '',
+            last_name: tg.initDataUnsafe.user.last_name || '',
+            username: tg.initDataUnsafe.user.username || ''
+        }, function(response) {
+            console.log('User saved:', response);
         });
     }
 
     function loadTasks(filter = 'all') {
         $.get(`handler.php?action=get&user_id=${currentUserId}&filter=${filter}`, function(data) {
-            const tasks = JSON.parse(data).tasks;
-            renderTasks(tasks);
+            try {
+                const response = JSON.parse(data);
+                if (response.tasks) {
+                    renderTasks(response.tasks);
+                } else if (response.error) {
+                    console.error('Error loading tasks:', response.error);
+                    $('#tasksList').html(
+                        '<div class="col-12 text-center text-muted">Ошибка загрузки задач</div>');
+                }
+            } catch (e) {
+                console.error('JSON parse error:', e, data);
+                $('#tasksList').html('<div class="col-12 text-center text-muted">Ошибка загрузки задач</div>');
+            }
+        }).fail(function(xhr, status, error) {
+            console.error('AJAX error:', status, error);
+            $('#tasksList').html('<div class="col-12 text-center text-muted">Ошибка соединения</div>');
         });
     }
 
@@ -244,51 +259,52 @@
 
         tasks.forEach(task => {
             const taskElement = `
-                <div class="col-12">
-                    <div class="card priority-${task.priority} ${task.status === 'completed' ? 'completed' : ''}">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <h5 class="card-title">${escapeHtml(task.title)}</h5>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-link text-white" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-dark">
-                                        <li><a class="dropdown-item" href="#" onclick="toggleTaskStatus(${task.id}, '${task.status}')">
-                                            ${task.status === 'completed' ? 'Вернуть' : 'Выполнить'}
-                                        </a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="editTask(${task.id})">Редактировать</a></li>
-                                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteTask(${task.id})">Удалить</a></li>
-                                    </ul>
-                                </div>
+            <div class="col-12">
+                <div class="card priority-${task.priority} ${task.status === 'completed' ? 'completed' : ''}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="card-title">${escapeHtml(task.title)}</h5>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-link text-white" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-dark">
+                                    <li><a class="dropdown-item" href="#" onclick="toggleTaskStatus(${task.id}, '${task.status}')">
+                                        ${task.status === 'completed' ? 'Вернуть' : 'Выполнить'}
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="editTask(${task.id})">Редактировать</a></li>
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteTask(${task.id})">Удалить</a></li>
+                                </ul>
                             </div>
-                            <p class="card-text text-muted">${escapeHtml(task.description || 'Без описания')}</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted">
-                                    <i class="fas fa-calendar"></i> ${task.due_date} 
-                                    <i class="fas fa-clock ms-2"></i> ${task.due_time}
-                                </small>
-                                <span class="badge bg-${getPriorityBadge(task.priority)}">
-                                    ${getPriorityText(task.priority)}
-                                </span>
-                            </div>
-                            ${task.reminder !== 'none' ? 
-                                `<small class="text-info"><i class="fas fa-bell"></i> Напоминание: ${getReminderText(task.reminder)}</small>` : ''}
                         </div>
+                        ${task.description ? `<p class="card-text text-muted">${escapeHtml(task.description)}</p>` : ''}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> ${task.due_date} 
+                                <i class="fas fa-clock ms-2"></i> ${task.due_time}
+                            </small>
+                            <span class="badge bg-${getPriorityBadge(task.priority)}">
+                                ${getPriorityText(task.priority)}
+                            </span>
+                        </div>
+                        ${task.reminder !== 'none' ? 
+                            `<small class="text-info"><i class="fas fa-bell"></i> Напоминание: ${getReminderText(task.reminder)}</small>` : ''}
                     </div>
                 </div>
-            `;
+            </div>
+        `;
             container.append(taskElement);
         });
     }
 
     function escapeHtml(unsafe) {
-        return unsafe?.replace(/[&<"']/g, m => ({
+        if (!unsafe) return '';
+        return unsafe.replace(/[&<"']/g, m => ({
             '&': '&amp;',
             '<': '&lt;',
             '"': '&quot;',
             "'": '&#039;'
-        } [m])) || '';
+        } [m]));
     }
 
     function getPriorityBadge(priority) {
@@ -311,9 +327,9 @@
 
     function getReminderText(reminder) {
         const texts = {
-            '30min': '30 мин',
-            '5min': '5 мин',
-            '1min': '1 мин'
+            '30min': 'за 30 мин',
+            '5min': 'за 5 мин',
+            '1min': 'за 1 мин'
         };
         return texts[reminder] || 'Неизвестно';
     }
@@ -321,25 +337,69 @@
     function showAddTaskModal() {
         $('#taskForm')[0].reset();
         setupDateDefaults();
-        new bootstrap.Modal('#addTaskModal').show();
+        new bootstrap.Modal(document.getElementById('addTaskModal')).show();
     }
 
     function addTask() {
-        const formData = $('#taskForm').serializeArray();
-        const taskData = {};
-        formData.forEach(field => taskData[field.name] = field.value);
+        // Собираем данные из формы
+        const formData = {
+            title: $('input[name="title"]').val(),
+            description: $('textarea[name="description"]').val(),
+            due_date: $('input[name="due_date"]').val(),
+            due_time: $('input[name="due_time"]').val(),
+            priority: $('select[name="priority"]').val(),
+            reminder: $('select[name="reminder"]').val()
+        };
 
-        $.post('handler.php?action=add', {
-            user_id: currentUserId,
-            ...taskData
-        }, function(response) {
-            const result = JSON.parse(response);
-            if (result.success) {
-                $('#addTaskModal').modal('hide');
-                loadTasks(currentFilter);
+        // Валидация
+        if (!formData.title || !formData.due_date || !formData.due_time) {
+            tg.showPopup({
+                title: 'Ошибка',
+                message: 'Заполните обязательные поля'
+            });
+            return;
+        }
+
+        console.log('Sending data:', formData);
+
+        // Отправляем POST запрос
+        $.ajax({
+            url: 'handler.php?action=add',
+            type: 'POST',
+            data: {
+                user_id: currentUserId,
+                ...formData
+            },
+            success: function(response) {
+                console.log('Response:', response);
+                try {
+                    const result = JSON.parse(response);
+                    if (result.success) {
+                        $('#addTaskModal').modal('hide');
+                        loadTasks(currentFilter);
+                        tg.showPopup({
+                            title: 'Успех',
+                            message: 'Задача добавлена'
+                        });
+                    } else {
+                        tg.showPopup({
+                            title: 'Ошибка',
+                            message: result.error || 'Не удалось добавить задачу'
+                        });
+                    }
+                } catch (e) {
+                    console.error('JSON parse error:', e);
+                    tg.showPopup({
+                        title: 'Ошибка',
+                        message: 'Ошибка сервера'
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX error:', status, error);
                 tg.showPopup({
-                    title: 'Успех',
-                    message: 'Задача добавлена'
+                    title: 'Ошибка',
+                    message: 'Ошибка соединения'
                 });
             }
         });
@@ -350,20 +410,48 @@
             $.post('handler.php?action=delete', {
                 user_id: currentUserId,
                 task_id: taskId
-            }, function() {
-                loadTasks(currentFilter);
+            }, function(response) {
+                try {
+                    const result = JSON.parse(response);
+                    if (result.success) {
+                        loadTasks(currentFilter);
+                        tg.showPopup({
+                            title: 'Успех',
+                            message: 'Задача удалена'
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error:', e);
+                }
             });
         }
     }
 
     function toggleTaskStatus(taskId, currentStatus) {
         const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
-        $.post('handler.php?action=update', {
-            user_id: currentUserId,
-            task_id: taskId,
-            status: newStatus
-        }, function() {
-            loadTasks(currentFilter);
+
+        // Создаем объект FormData для отправки JSON
+        const formData = new FormData();
+        formData.append('user_id', currentUserId);
+        formData.append('task_id', taskId);
+        formData.append('status', newStatus);
+
+        $.ajax({
+            url: 'handler.php?action=update',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                try {
+                    const result = JSON.parse(response);
+                    if (result.success) {
+                        loadTasks(currentFilter);
+                    }
+                } catch (e) {
+                    console.error('Error:', e);
+                }
+            }
         });
     }
 
@@ -388,8 +476,14 @@
         const query = $('#searchInput').val();
         if (query.length > 2) {
             $.get(`handler.php?action=search&user_id=${currentUserId}&q=${encodeURIComponent(query)}`, function(data) {
-                const tasks = JSON.parse(data).tasks;
-                renderTasks(tasks);
+                try {
+                    const response = JSON.parse(data);
+                    if (response.tasks) {
+                        renderTasks(response.tasks);
+                    }
+                } catch (e) {
+                    console.error('Error:', e);
+                }
             });
         } else if (query.length === 0) {
             loadTasks(currentFilter);
@@ -398,42 +492,66 @@
 
     function showProfile() {
         $.get(`handler.php?action=stats&user_id=${currentUserId}`, function(data) {
-            const stats = JSON.parse(data).stats;
-            let html = `
-                <div class="text-center mb-4">
-                    <h4>${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}</h4>
-                    <p class="text-muted">@${tg.initDataUnsafe.user.username}</p>
-                </div>
-                <div class="row text-center">
-            `;
+            try {
+                const response = JSON.parse(data);
+                if (response.stats) {
+                    const stats = response.stats;
+                    let html = `
+                    <div class="text-center mb-4">
+                        <h4>${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name || ''}</h4>
+                        <p class="text-muted">@${tg.initDataUnsafe.user.username || 'без username'}</p>
+                    </div>
+                    <div class="row text-center">
+                `;
 
-            if (stats.pending) {
-                html += `
+                    const pending = stats.pending || {
+                        count: 0
+                    };
+                    const completed = stats.completed || {
+                        count: 0
+                    };
+                    const cancelled = stats.cancelled || {
+                        count: 0
+                    };
+
+                    html += `
                     <div class="col-4">
                         <div class="bg-primary rounded p-3">
-                            <h3>${stats.pending.count}</h3>
+                            <h3>${pending.count}</h3>
                             <small>В работе</small>
                         </div>
                     </div>
-                `;
-            }
-
-            if (stats.completed) {
-                html += `
                     <div class="col-4">
                         <div class="bg-success rounded p-3">
-                            <h3>${stats.completed.count}</h3>
+                            <h3>${completed.count}</h3>
                             <small>Выполнено</small>
                         </div>
                     </div>
+                    <div class="col-4">
+                        <div class="bg-secondary rounded p-3">
+                            <h3>${cancelled.count}</h3>
+                            <small>Отменено</small>
+                        </div>
+                    </div>
                 `;
-            }
 
-            html += '</div>';
-            $('#profileStats').html(html);
-            new bootstrap.Modal('#profileModal').show();
+                    html += '</div>';
+                    $('#profileStats').html(html);
+                    new bootstrap.Modal(document.getElementById('profileModal')).show();
+                }
+            } catch (e) {
+                console.error('Error:', e);
+            }
         });
     }
+
+    // Добавляем обработчик нажатия Enter в форме
+    $(document).on('keypress', '#taskForm input', function(e) {
+        if (e.which === 13) {
+            addTask();
+            e.preventDefault();
+        }
+    });
     </script>
 </body>
 
