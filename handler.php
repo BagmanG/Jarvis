@@ -239,57 +239,63 @@ class TaskHandler {
     }
 
     private function getTasksForReminder() {
-    try{
     $tasks = [];
     $reminderTypes = ['30min', '5min', '1min'];
     
-    foreach ($reminderTypes as $reminderType) {
-        $reminderTime = $this->calculateReminderTime($reminderType);
-        
-        $sql = "
-            SELECT *
-            FROM Tasks 
-            WHERE reminder = '$reminderType' 
-            AND DATE(due_date) = DATE('$reminderTime')
-            AND TIME(due_time) = TIME('$reminderTime')
-            AND reminder_sent = FALSE
-            AND status = 'pending'
-        ";
-        
-        $result = $this->conn->query($sql);
-        
-        if ($result) {
-            while ($task = $result->fetch_assoc()) {
-                $tasks[] = $task;
+    try {
+        foreach ($reminderTypes as $reminderType) {
+            $reminderTime = $this->calculateReminderTime($reminderType);
+            $timeWindowStart = date('Y-m-d H:i:s', strtotime($reminderTime) - 40); // 30 секунд до
+            $timeWindowEnd = date('Y-m-d H:i:s', strtotime($reminderTime) + 40);   // 30 секунд после
+            
+            $sql = "
+                SELECT *
+                FROM Tasks 
+                WHERE reminder = ? 
+                AND due_date_time BETWEEN ? AND ?
+                AND reminder_sent = FALSE
+                AND status = 'pending'
+            ";
+            
+            // Используем подготовленные выражения для безопасности
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param('sss', $reminderType, $timeWindowStart, $timeWindowEnd);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            if ($result) {
+                while ($task = $result->fetch_assoc()) {
+                    $tasks[] = $task;
+                }
             }
+            $stmt->close();
         }
+    } catch(Exception $e) {
+        error_log("Execute failed: " . $e->getMessage());
     }
-}catch(Exception $e){
-    error_log("Execute failed for {$reminderType}: " . $e);
-}
     
     return $tasks;
 }
 
-    private function calculateReminderTime($reminderType) {
-        $now = new DateTime();
-        
-        switch ($reminderType) {
-            case '30min':
-                $now->modify('+30 minutes');
-                break;
-            case '5min':
-                $now->modify('+5 minutes');
-                break;
-            case '1min':
-                $now->modify('+1 minute');
-                break;
-            default:
-                return date('Y-m-d H:i:s');
-        }
-        
-        return $now->format('Y-m-d H:i:s');
+private function calculateReminderTime($reminderType) {
+    $now = new DateTime();
+    
+    switch ($reminderType) {
+        case '30min':
+            $now->modify('+30 minutes');
+            break;
+        case '5min':
+            $now->modify('+5 minutes');
+            break;
+        case '1min':
+            $now->modify('+1 minute');
+            break;
+        default:
+            return date('Y-m-d H:i:s');
     }
+    
+    return $now->format('Y-m-d H:i:s');
+}
 
     private function sendReminder($task, $botToken) {
         $message = "🔔 Напоминание!\n";
