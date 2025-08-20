@@ -234,13 +234,13 @@
     }
 
     function loadTasks(filter = 'all') {
-        $.get(`handler.php?action=get&user_id=${currentUserId}&filter=${filter}`, function(data) {
+        $.get(`handler.php?action=get&user_id=${currentUserId}&filter=${filter}`, function(response) {
             try {
-                console.log('Raw response:', data);
+                console.log('Raw response:', response);
 
                 // Парсим JSON ответ
-                const response = JSON.parse(data);
-                console.log(response);
+                //const response = JSON.parse(data);
+                //console.log(response);
                 // Проверяем наличие tasks в ответе
                 if (response.tasks !== undefined) {
                     //renderTasks(response.tasks);
