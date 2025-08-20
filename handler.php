@@ -249,20 +249,17 @@ class TaskHandler {
             SELECT *
             FROM Tasks 
             WHERE reminder = '$reminderType' 
-            AND due_date_time BETWEEN '$timeWindowStart' AND '$timeWindowEnd'
+            AND CONCAT(due_date, ' ', due_time) BETWEEN '$timeWindowStart' AND '$timeWindowEnd'
             AND reminder_sent = FALSE
             AND status = 'pending'
         ";
-
         $result = $this->conn->query($sql);
         
         if ($result) {
             while ($task = $result->fetch_assoc()) {
                 $tasks[] = $task;
-                echo $task;
             }
         }
-        echo $result == true;
     }
     
     return $tasks;
