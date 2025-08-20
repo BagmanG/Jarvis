@@ -9,12 +9,13 @@ require_once 'handler.php';
 
 $handler = new TaskHandler();
 $result = $handler->handleCron();
-
+$file = __DIR__ . '/taskmanager-cron.log';
 // Логируем выполнение
-file_put_contents('taskmanager-cron.log', 
+file_put_contents($file, 
     date('Y-m-d H:i:s') . " - " . $result . "\n", 
     FILE_APPEND
 );
+
 
 echo "Cron job executed at " . date('Y-m-d H:i:s') . "\n";
 ?>
