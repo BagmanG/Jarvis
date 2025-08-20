@@ -4,11 +4,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 require_once 'config.php';
-echo DB_HOST;
-echo DB_NAME;
-echo BOT_TOKEN;
-echo DB_PASS;
-return;
+
 // Логирование запросов
 file_put_contents('/tmp/debug.log', date('Y-m-d H:i:s') . " - " . print_r($_REQUEST, true) . "\n", FILE_APPEND);
 
@@ -17,7 +13,7 @@ class TaskHandler {
     private $timezone = 'Europe/Moscow'; // UTC+3
 
     public function __construct() {
-        $this->conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+        $this->conn = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
         if ($this->conn->connect_error) {
             die(json_encode(['error' => 'Database connection failed']));
         }
