@@ -7,7 +7,7 @@ require_once 'config.php';
 echo DB_HOST;
 echo DB_NAME;
 echo BOT_TOKEN;
-echo DB_PASSWORD;
+echo DB_PASS;
 return;
 // Логирование запросов
 file_put_contents('/tmp/debug.log', date('Y-m-d H:i:s') . " - " . print_r($_REQUEST, true) . "\n", FILE_APPEND);
