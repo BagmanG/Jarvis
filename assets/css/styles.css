@@ -1,123 +1,89 @@
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
-}
-
-.sidebar {
+* {
+    margin: 0;
     padding: 0;
-    position: fixed;
-    height: 100vh;
-    overflow-y: auto;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
 }
 
-.main-content {
-    margin-left: auto;
-    padding-left: 0;
-}
-
-.nav-link {
-    color: rgba(255, 255, 255, 0.8);
-    padding: 12px 20px;
-    border-left: 3px solid transparent;
-    transition: all 0.3s;
-}
-
-.nav-link:hover {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.nav-link.active {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.2);
-    border-left: 3px solid #0d6efd;
-}
-
-.task-card {
-    margin-bottom: 20px;
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: none;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.task-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-}
-
-.task-card .card-body {
-    padding: 1.5rem;
-}
-
-.task-card .card-title {
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-}
-
-.task-card .card-text {
-    color: #6c757d;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-}
-
-.task-card .task-meta {
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    font-size: 0.85rem;
+    justify-content: center;
+    padding: 20px;
 }
 
-.task-card .task-date {
-    color: #6c757d;
+.container {
+    width: 100%;
+    max-width: 400px;
 }
 
-.task-card .task-priority {
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-weight: 500;
-    font-size: 0.75rem;
-    text-transform: uppercase;
+.user-info {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
 
-.priority-low {
-    background-color: #d1e7dd;
-    color: #0f5132;
+.avatar-container {
+    margin-bottom: 20px;
 }
 
-.priority-medium {
-    background-color: #fff3cd;
-    color: #664d03;
+.avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid #667eea;
+    object-fit: cover;
+    margin: 0 auto;
 }
 
-.priority-high {
-    background-color: #f8d7da;
-    color: #842029;
+.info-container h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.5em;
 }
 
-.task-card .task-actions {
-    display: flex;
-    gap: 10px;
+.user-data {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 15px;
 }
 
-.completed .card-title,
-.completed .card-text {
-    text-decoration: line-through;
-    color: #adb5bd !important;
+.user-data p {
+    font-size: 1.1em;
+    color: #555;
+    margin: 10px 0;
 }
 
-.empty-state {
-    display: none;
+.user-data strong {
+    color: #333;
 }
 
-@media (max-width: 768px) {
-    .sidebar {
-        position: static;
-        height: auto;
+#user-id {
+    color: #667eea;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.loading {
+    opacity: 0.7;
+}
+
+@media (max-width: 480px) {
+    .user-info {
+        padding: 20px;
     }
-    .main-content {
-        padding-left: 15px;
+    
+    .avatar {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .info-container h2 {
+        font-size: 1.3em;
     }
 }
