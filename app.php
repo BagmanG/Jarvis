@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <title>Task Manager — Tailwind</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -12,12 +12,12 @@
         theme: {
             extend: {
                 colors: {
-                    tgBg: 'var(--tg-theme-bg-color)',
-                    tgText: 'var(--tg-theme-text-color)',
-                    tgSec: 'var(--tg-theme-secondary-bg-color)',
-                    tgBtn: 'var(--tg-theme-button-color)',
-                    tgBtnText: 'var(--tg-theme-button-text-color)',
-                    tgHint: 'var(--tg-theme-hint-color)'
+                    primary: '#1E1E2F',
+                    secondary: '#2A2A3D',
+                    accent: '#4F46E5',
+                    hint: '#9AA4B2',
+                    card: '#232333',
+                    textmain: '#FFFFFF'
                 },
                 boxShadow: {
                     soft: '0 8px 24px rgba(0,0,0,.12)'
@@ -33,23 +33,14 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-    :root {
-        --tg-theme-bg-color: #0f1115;
-        --tg-theme-text-color: #fff;
-        --tg-theme-secondary-bg-color: #151922;
-        --tg-theme-button-color: #2a2f3a;
-        --tg-theme-button-text-color: #fff;
-        --tg-theme-hint-color: #9aa4b2;
-    }
-
     html,
     body {
         height: 100%
     }
 
     body {
-        background: var(--tg-theme-bg-color);
-        color: var(--tg-theme-text-color);
+        background: #1E1E2F;
+        color: #FFFFFF;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, system-ui, sans-serif
     }
 
@@ -63,20 +54,20 @@
     <!-- Top bar -->
     <header class="sticky top-0 z-30 backdrop-blur bg-black/10">
         <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-            <button id="backBtn" class="p-2 rounded-xl bg-tgSec/60 hover:bg-tgSec"><i
+            <button id="backBtn" class="p-2 rounded-xl bg-secondary/60 hover:bg-secondary"><i
                     class="fa-solid fa-angle-left"></i></button>
             <h1 class="text-xl font-semibold">ToDo</h1>
             <div class="ml-auto flex items-center gap-2">
                 <div class="relative">
                     <input id="searchInput"
-                        class="peer w-56 md:w-72 bg-tgSec/80 rounded-xl pl-10 pr-3 py-2 outline-none placeholder-tgHint text-sm"
+                        class="peer w-56 md:w-72 bg-secondary/80 rounded-xl pl-10 pr-3 py-2 outline-none placeholder-hint text-sm"
                         placeholder="Поиск задач..." />
                     <i
-                        class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-tgHint peer-focus:text-white"></i>
+                        class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-hint peer-focus:text-white"></i>
                 </div>
-                <button class="p-2 rounded-xl bg-tgSec/60 hover:bg-tgSec" onclick="showProfile()"><i
+                <button class="p-2 rounded-xl bg-secondary/60 hover:bg-secondary" onclick="showProfile()"><i
                         class="fa-solid fa-user"></i></button>
-                <button class="p-2 rounded-xl bg-tgSec/60 hover:bg-tgSec" onclick="showAddTaskModal()"><i
+                <button class="p-2 rounded-xl bg-secondary/60 hover:bg-secondary" onclick="showAddTaskModal()"><i
                         class="fa-solid fa-plus"></i></button>
             </div>
         </div>
@@ -353,7 +344,7 @@
                         `<div class='text-center text-tgHint'>Ошибка: ${response.error}</div>`);
                 } else {
                     $('#tasksBuckets').html(
-                    `<div class='text-center text-tgHint'>Неверный ответ сервера</div>`);
+                        `<div class='text-center text-tgHint'>Неверный ответ сервера</div>`);
                 }
             } catch (e) {
                 $('#tasksBuckets').html(`<div class='text-center text-tgHint'>Ошибка обработки</div>`);
