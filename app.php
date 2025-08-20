@@ -237,13 +237,8 @@
         $.get(`handler.php?action=get&user_id=${currentUserId}&filter=${filter}`, function(response) {
             try {
                 console.log('Raw response:', response);
-
-                // Парсим JSON ответ
-                //const response = JSON.parse(data);
-                //console.log(response);
-                // Проверяем наличие tasks в ответе
                 if (response.tasks !== undefined) {
-                    //renderTasks(response.tasks);
+                    renderTasks(response.tasks);
                 } else if (response.error) {
                     console.error('Error loading tasks:', response.error);
                     $('#tasksList').html('<div class="col-12 text-center text-muted">Ошибка: ' + response
