@@ -235,16 +235,18 @@
                     renderTasks(response.tasks);
                 } else if (response.error) {
                     console.error('Error loading tasks:', response.error);
+                    alert(response.error);
                     $('#tasksList').html(
-                        '<div class="col-12 text-center text-muted">Ошибка загрузки задач' + response
-                        .error + '</div>');
+                        '<div class="col-12 text-center text-muted">Ошибка загрузки задач</div>');
                 }
             } catch (e) {
                 console.error('JSON parse error:', e, data);
+                alert(e);
                 $('#tasksList').html('<div class="col-12 text-center text-muted">Ошибка загрузки задач</div>');
             }
         }).fail(function(xhr, status, error) {
             console.error('AJAX error:', status, error);
+            alert(error);
             $('#tasksList').html('<div class="col-12 text-center text-muted">Ошибка соединения</div>');
         });
     }
