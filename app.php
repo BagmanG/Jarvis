@@ -195,7 +195,14 @@
     tg.expand();
     tg.enableClosingConfirmation();
 
-    let currentUserId = tg?.initDataUnsafe?.user?.id ?? 1;
+    <
+    ?
+    if ($_GET['flavor'] == "test") {
+        echo "let currentUserId = 1;";
+    } else {
+        echo "let currentUserId = tg.initDataUnsafe.user.id;";
+    } ?
+    >
     let currentFilter = 'all';
 
     // Инициализация
