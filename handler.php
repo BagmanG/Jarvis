@@ -245,7 +245,7 @@ class TaskHandler {
         $reminderTime = $this->calculateReminderTime($reminderType);
         
         $stmt = $this->conn->prepare("
-            SELECT t.*, u.chat_id 
+            SELECT t.*
             FROM Tasks t
             JOIN Users u ON t.user_id = u.userId
             WHERE t.reminder = ? 
