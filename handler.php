@@ -242,8 +242,8 @@ class TaskHandler {
     
     foreach ($reminderTypes as $reminderType) {
         $reminderTime = $this->calculateReminderTime($reminderType);
-        $timeWindowStart = date('Y-m-d H:i:s', strtotime($reminderTime) - 50);
-        $timeWindowEnd = date('Y-m-d H:i:s', strtotime($reminderTime) + 50);
+        $timeWindowStart = date('Y-m-d H:i:s', strtotime($reminderTime) - 60);
+        $timeWindowEnd = date('Y-m-d H:i:s', strtotime($reminderTime) + 60);
         
         $sql = "
             SELECT t.*, u.chat_id
