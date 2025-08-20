@@ -238,7 +238,7 @@
     ?>
 
     // State
-    let selectedDate = new Date();
+    let selectedDate = getUTCDateWithOffset();
     let lastLoadedTasks = [];
     let openMenuId = null; // для меню задачи
 
