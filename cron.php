@@ -11,7 +11,7 @@ $handler = new TaskHandler();
 $result = $handler->handleCron();
 
 // Логируем выполнение
-file_put_contents('/taskmanager-cron.log', 
+file_put_contents('taskmanager-cron.log', 
     date('Y-m-d H:i:s') . " - " . $result . "\n", 
     FILE_APPEND
 );
