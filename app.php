@@ -236,7 +236,8 @@
                 } else if (response.error) {
                     console.error('Error loading tasks:', response.error);
                     $('#tasksList').html(
-                        '<div class="col-12 text-center text-muted">Ошибка загрузки задач</div>');
+                        '<div class="col-12 text-center text-muted">Ошибка загрузки задач' + response
+                        .error + '</div>');
                 }
             } catch (e) {
                 console.error('JSON parse error:', e, data);
