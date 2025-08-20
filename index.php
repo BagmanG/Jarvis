@@ -33,6 +33,9 @@ try {
 // Проверяем, есть ли сообщение в обновлении
 if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHAT_ID) {
     Vars::initFromUpdate($update);
+    if(Events::GetParam("chat_id")=="-"){
+        Events::SetParam("chat_id",Vars::getChatId());
+    }
     $message = $update["message"];
     $chat_id = $message["chat"]["id"];
     $text = isset($message["text"]) ? $message["text"] : "";

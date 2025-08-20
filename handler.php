@@ -242,16 +242,18 @@ class TaskHandler {
     
     foreach ($reminderTypes as $reminderType) {
         $reminderTime = $this->calculateReminderTime($reminderType);
-        $timeWindowStart = date('Y-m-d H:i:s', strtotime($reminderTime) - 40);
-        $timeWindowEnd = date('Y-m-d H:i:s', strtotime($reminderTime) + 40);
+        $timeWindowStart = date('Y-m-d H:i:s', strtotime($reminderTime) - 50);
+        $timeWindowEnd = date('Y-m-d H:i:s', strtotime($reminderTime) + 50);
         
         $sql = "
-            SELECT *
-            FROM Tasks 
-            WHERE reminder = '$reminderType' 
-            AND CONCAT(due_date, ' ', due_time) BETWEEN '$timeWindowStart' AND '$timeWindowEnd'
-            AND reminder_sent = FALSE
-            AND status = 'pending'
+            SELECT t.*, u.chat_id
+            FROM Tasks t
+            INNER JOIN Users u ON t.user_id = u.userId
+            WHERE t.reminder = '$reminderType' 
+            AND t.due_date = DATE('$timeWindowStart')
+            AND t.due_time BETWEEN TIME('$timeWindowStart') AND TIME('$timeWindowEnd')
+            AND t.reminder_sent = FALSE
+            AND t.status = 'pending'
         ";
         echo $sql;
         $result = $this->conn->query($sql);
@@ -297,8 +299,7 @@ private function calculateReminderTime($reminderType) {
         
         $url = "https://api.telegram.org/bot{$botToken}/sendMessage";
         $data = [
-            //'chat_id' => $task['chat_id'],
-            'chat_id' => '1012037332',
+            'chat_id' => $task['chat_id'],
             'text' => $message
         ];
         
