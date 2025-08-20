@@ -243,7 +243,7 @@
 
                 // Проверяем наличие tasks в ответе
                 if (response.tasks !== undefined) {
-                    renderTasks(response.tasks);
+                    //renderTasks(response.tasks);
                 } else if (response.error) {
                     console.error('Error loading tasks:', response.error);
                     $('#tasksList').html('<div class="col-12 text-center text-muted">Ошибка: ' + response
@@ -256,7 +256,7 @@
             } catch (e) {
                 console.error('JSON parse error:', e, 'Data:', data);
                 $('#tasksList').html(
-                '<div class="col-12 text-center text-muted">Ошибка обработки данных</div>');
+                    '<div class="col-12 text-center text-muted">Ошибка обработки данных</div>');
             }
         }).fail(function(xhr, status, error) {
             console.error('AJAX error:', status, error);
