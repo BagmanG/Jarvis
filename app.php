@@ -229,7 +229,6 @@
         enableClosingConfirmation: () => {}
     };
     tg.expand();
-    tg.enableClosingConfirmation();
     <?php
       if(isset($_GET['flavor']) && $_GET['flavor']==='test'){
         echo "let currentUserId = 1;";
