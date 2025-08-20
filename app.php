@@ -382,7 +382,7 @@
                 user_id: currentUserId,
                 ...formData
             },
-            success: function(response) {
+            success: function(result) {
 
                 try {
 
