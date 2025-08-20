@@ -250,6 +250,15 @@ class TaskHandler {
             FROM Tasks t
             INNER JOIN Users u ON t.user_id = u.userId
             WHERE t.reminder = '$reminderType' 
+            AND t.due_time BETWEEN TIME('$timeWindowStart') AND TIME('$timeWindowEnd')
+            AND t.reminder_sent = FALSE
+            AND t.status = 'pending'
+        ";
+        $oldSQL = "
+            SELECT t.*, u.chat_id
+            FROM Tasks t
+            INNER JOIN Users u ON t.user_id = u.userId
+            WHERE t.reminder = '$reminderType' 
             AND t.due_date = DATE('$timeWindowStart')
             AND t.due_time BETWEEN TIME('$timeWindowStart') AND TIME('$timeWindowEnd')
             AND t.reminder_sent = FALSE
