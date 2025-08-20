@@ -86,45 +86,43 @@ class TaskHandler {
 }
 
     private function getTasks($userId) {
-        $filter = $_GET['filter'] ?? 'all';
-        $status = $_GET['status'] ?? 'pending';
-        
-        $sql = "SELECT * FROM Tasks WHERE user_id = ?";
-        $params = [$userId];
-        $types = "i";
-        
-        if ($filter === 'today') {
-            $sql .= " AND due_date = CURDATE()";
-        } elseif ($filter === 'tomorrow') {
-            $sql .= " AND due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY)";
-        } elseif ($filter === 'completed') {
-            $sql .= " AND status = 'completed'";
-        } else {
-            $sql .= " AND status = ?";
-            $params[] = $status;
-            $types .= "s";
-        }
-        
-        $sql .= " ORDER BY due_date, due_time";
-        
-        $stmt = $this->conn->prepare($sql);
-        
-        if ($filter === 'all') {
-            $stmt->bind_param($types, ...$params);
-        } else {
-            $stmt->bind_param("i", $userId);
-        }
-        
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        $tasks = [];
-        while ($row = $result->fetch_assoc()) {
-            $tasks[] = $row;
-        }
-        
-        return json_encode(['tasks' => $tasks]);
+    $filter = $_GET['filter'] ?? 'all';
+    
+    $sql = "SELECT * FROM Tasks WHERE user_id = ?";
+    $params = [$userId];
+    $types = "i";
+    
+    if ($filter === 'today') {
+        $sql .= " AND due_date = CURDATE()";
+    } elseif ($filter === 'tomorrow') {
+        $sql .= " AND due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY)";
+    } elseif ($filter === 'completed') {
+        $sql .= " AND status = 'completed'";
+    } else {
+        // Для фильтра 'all' показываем все задачи кроме completed
+        $sql .= " AND status != 'completed'";
     }
+    
+    $sql .= " ORDER BY due_date, due_time";
+    
+    $stmt = $this->conn->prepare($sql);
+    
+    if ($filter === 'all' || $filter === 'completed') {
+        $stmt->bind_param("i", $userId);
+    } else {
+        $stmt->bind_param("i", $userId);
+    }
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $tasks = [];
+    while ($row = $result->fetch_assoc()) {
+        $tasks[] = $row;
+    }
+    
+    return json_encode(['tasks' => $tasks]);
+}
 
     private function updateTask($userId) {
         $data = json_decode(file_get_contents('php://input'), true);
