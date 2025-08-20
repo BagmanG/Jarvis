@@ -251,6 +251,22 @@
         return $('<div/>').text(unsafe || '').html();
     }
 
+    function getUTCDateWithOffset() {
+        const now = new Date();
+        // Получаем текущее время в UTC и добавляем 3 часа (UTC+3)
+        const utcPlus3 = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+        return utcPlus3;
+    }
+
+    function getTodayUTCPLus3() {
+        return fmt(getUTCDateWithOffset());
+    }
+
+    function getTomorrowUTCPLus3() {
+        const tomorrow = new Date(getUTCDateWithOffset().getTime() + 86400000);
+        return fmt(tomorrow);
+    }
+
     // Init
     $(function() {
         setupDateDefaults();
@@ -283,9 +299,10 @@
     }
 
     function setupDateDefaults() {
-        const now = new Date();
+        const now = getUTCDateWithOffset();
         const today = fmt(now);
         const time = pad(now.getHours()) + ":" + pad(now.getMinutes());
+
         $('input[name="due_date"]').val(today);
         $('input[name="due_time"]').val(time);
     }
@@ -378,24 +395,29 @@
     }
 
     function renderBuckets(tasks) {
-        const todayStr = fmt(new Date());
-        const tomorrowStr = fmt(new Date(Date.now() + 86400000));
+        const todayStr = getTodayUTCPLus3();
+        const tomorrowStr = getTomorrowUTCPLus3();
+
         const buckets = {
             'Сегодня': tasks.filter(t => t.due_date === todayStr),
             'Завтра': tasks.filter(t => t.due_date === tomorrowStr),
             'Предстоящие': tasks.filter(t => t.due_date > tomorrowStr)
         };
+
         const cont = $('#tasksBuckets');
         cont.empty();
+
         Object.keys(buckets).forEach(title => {
             const list = buckets[title];
             const section = $('<div></div>');
             section.append(`<div class="text-sm font-semibold mb-2">${title}</div>`);
+
             if (list.length === 0) {
                 section.append('<div class="text-sm text-hint">Нет задач</div>');
                 cont.append(section);
                 return;
             }
+
             list.sort((a, b) => a.due_time.localeCompare(b.due_time));
             list.forEach(task => {
                 section.append(taskRow(task));
