@@ -242,7 +242,6 @@ class TaskHandler {
     
     foreach ($reminderTypes as $reminderType) {
         $reminderTime = $this->calculateReminderTime($reminderType);
-        echo "Time".$reminderTime;
         $timeWindowStart = date('Y-m-d H:i:s', strtotime($reminderTime) - 40);
         $timeWindowEnd = date('Y-m-d H:i:s', strtotime($reminderTime) + 40);
         
@@ -269,7 +268,7 @@ class TaskHandler {
 
 private function calculateReminderTime($reminderType) {
     $now = new DateTime();
-    
+    echo "Time now".$now;
     switch ($reminderType) {
         case '30min':
             $now->modify('+30 minutes');
