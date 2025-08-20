@@ -383,7 +383,7 @@
                 ...formData
             },
             success: function(response) {
-                console.log('Response:', result);
+
                 try {
 
                     if (result.success) {
