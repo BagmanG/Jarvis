@@ -11,7 +11,10 @@ $handler = new TaskHandler();
 $result = $handler->handleCron();
 
 // Логируем выполнение
-error_log(date('Y-m-d H:i:s') . ' - ' . $result . PHP_EOL, 3, 'error.log');
+file_put_contents('/taskmanager-cron.log', 
+    date('Y-m-d H:i:s') . " - " . $result . "\n", 
+    FILE_APPEND
+);
 
 echo "Cron job executed at " . date('Y-m-d H:i:s') . "\n";
 ?>
