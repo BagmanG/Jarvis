@@ -195,7 +195,7 @@
     tg.expand();
     tg.enableClosingConfirmation();
 
-    let currentUserId = tg.initDataUnsafe.user.id ?? 1;
+    let currentUserId = tg.initDataUnsafe.user.id || 1;
     let currentFilter = 'all';
 
     // Инициализация
