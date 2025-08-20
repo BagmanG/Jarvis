@@ -3,358 +3,481 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Task Manager</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Task Manager — Tailwind</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    tgBg: 'var(--tg-theme-bg-color)',
+                    tgText: 'var(--tg-theme-text-color)',
+                    tgSec: 'var(--tg-theme-secondary-bg-color)',
+                    tgBtn: 'var(--tg-theme-button-color)',
+                    tgBtnText: 'var(--tg-theme-button-text-color)',
+                    tgHint: 'var(--tg-theme-hint-color)'
+                },
+                boxShadow: {
+                    soft: '0 8px 24px rgba(0,0,0,.12)'
+                },
+                borderRadius: {
+                    xl2: '1rem'
+                }
+            }
+        }
+    }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
     <style>
     :root {
-        --tg-theme-bg-color: #000;
+        --tg-theme-bg-color: #0f1115;
         --tg-theme-text-color: #fff;
-        --tg-theme-button-color: #212529;
+        --tg-theme-secondary-bg-color: #151922;
+        --tg-theme-button-color: #2a2f3a;
         --tg-theme-button-text-color: #fff;
-        --tg-theme-secondary-bg-color: #121212;
-        --tg-theme-hint-color: #aaa;
-        --tg-theme-link-color: #007bff;
+        --tg-theme-hint-color: #9aa4b2;
+    }
+
+    html,
+    body {
+        height: 100%
     }
 
     body {
         background: var(--tg-theme-bg-color);
         color: var(--tg-theme-text-color);
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, system-ui, sans-serif
     }
 
-    .navbar {
-        background: var(--tg-theme-secondary-bg-color) !important;
-    }
-
-    .card {
-        background: var(--tg-theme-secondary-bg-color);
-        border: 1px solid #333;
-        margin-bottom: 15px;
-    }
-
-    .form-control {
-        background: #333;
-        border: 1px solid #555;
-        color: white;
-    }
-
-    .form-control:focus {
-        background: #444;
-        border-color: #007bff;
-        color: white;
-    }
-
-    .btn-primary {
-        background: var(--tg-theme-button-color);
-        border: none;
-    }
-
-    .priority-high {
-        border-left: 4px solid #dc3545;
-    }
-
-    .priority-medium {
-        border-left: 4px solid #ffc107;
-    }
-
-    .priority-low {
-        border-left: 4px solid #28a745;
-    }
-
-    .completed {
-        opacity: 0.7;
+    .scrollbar-none::-webkit-scrollbar {
+        display: none
     }
     </style>
 </head>
 
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <span class="navbar-brand">📋 Task Manager</span>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="#" onclick="showProfile()"><i class="fas fa-user"></i></a>
+<body class="min-h-screen">
+    <!-- Top bar -->
+    <header class="sticky top-0 z-30 backdrop-blur bg-black/10">
+        <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+            <button id="backBtn" class="p-2 rounded-xl bg-tgSec/60 hover:bg-tgSec"><i
+                    class="fa-solid fa-angle-left"></i></button>
+            <h1 class="text-xl font-semibold">ToDo</h1>
+            <div class="ml-auto flex items-center gap-2">
+                <div class="relative">
+                    <input id="searchInput"
+                        class="peer w-56 md:w-72 bg-tgSec/80 rounded-xl pl-10 pr-3 py-2 outline-none placeholder-tgHint text-sm"
+                        placeholder="Поиск задач..." />
+                    <i
+                        class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-tgHint peer-focus:text-white"></i>
+                </div>
+                <button class="p-2 rounded-xl bg-tgSec/60 hover:bg-tgSec" onclick="showProfile()"><i
+                        class="fa-solid fa-user"></i></button>
+                <button class="p-2 rounded-xl bg-tgSec/60 hover:bg-tgSec" onclick="showAddTaskModal()"><i
+                        class="fa-solid fa-plus"></i></button>
             </div>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto p-4 pt-3 space-y-4">
+        <!-- Calendar card -->
+        <section class="bg-tgSec/70 rounded-2xl shadow-soft p-4">
+            <div class="flex items-center justify-between">
+                <button class="p-2 rounded-xl hover:bg-white/5" id="prevMonth"><i
+                        class="fa-solid fa-angle-left"></i></button>
+                <div class="text-sm text-tgHint" id="monthLabel">Фев 2018</div>
+                <button class="p-2 rounded-xl hover:bg-white/5" id="nextMonth"><i
+                        class="fa-solid fa-angle-right"></i></button>
+            </div>
+            <div class="mt-3 grid grid-cols-7 text-center text-xs text-tgHint">
+                <div>Mo</div>
+                <div>Tu</div>
+                <div>We</div>
+                <div>Th</div>
+                <div>Fr</div>
+                <div>Sa</div>
+                <div>Su</div>
+            </div>
+            <div id="calendarGrid" class="mt-2 grid grid-cols-7 gap-1"></div>
+        </section>
+
+        <!-- Event under calendar as in design -->
+        <section class="bg-tgSec/70 rounded-2xl p-4">
+            <div class="flex items-center gap-2 text-sm text-tgHint mb-2"><span
+                    class="w-2 h-2 bg-red-500 rounded-full"></span> Event</div>
+            <div id="eventCard" class="bg-black/20 rounded-2xl p-3 flex items-center justify-between">
+                <div>
+                    <div class="font-medium" id="eventTitle">Нет задач</div>
+                    <div class="text-xs text-tgHint" id="eventDate">—</div>
+                </div>
+                <div class="text-xs font-medium" id="eventTime"></div>
+            </div>
+        </section>
+
+        <!-- Tasks list (Today/Tomorrow/Upcoming) -->
+        <section class="bg-tgSec/70 rounded-2xl p-2">
+            <div class="p-3">
+                <h2 class="text-lg font-semibold mb-2">Мои задачи</h2>
+                <div id="tasksBuckets" class="space-y-6"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom segmented control -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-tgSec/80 backdrop-blur border-t border-white/5">
+        <div class="max-w-3xl mx-auto flex items-center justify-between px-4 py-3">
+            <button class="tabBtn data-[active=true]:bg-white/10 rounded-xl px-4 py-2" data-filter="all">Задачи</button>
+            <button class="tabBtn data-[active=true]:bg-white/10 rounded-xl px-4 py-2"
+                data-filter="pending">Невыполненные</button>
+            <button class="tabBtn data-[active=true]:bg-white/10 rounded-xl px-4 py-2"
+                data-filter="completed">Выполненные</button>
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <!-- Поиск -->
-        <div class="row mb-3">
-            <div class="col-12">
-                <div class="input-group">
-                    <input type="text" id="searchInput" class="form-control" placeholder="Поиск задач...">
-                    <button class="btn btn-primary" onclick="searchTasks()">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
+    <!-- Floating Add Button (mobile like) -->
+    <button
+        class="fixed bottom-20 right-5 w-14 h-14 rounded-full bg-tgBtn text-tgBtnText shadow-soft flex items-center justify-center"
+        onclick="showAddTaskModal()"><i class="fa-solid fa-plus"></i></button>
+
+    <!-- Modal Add/Edit -->
+    <div id="taskModal" class="hidden fixed inset-0 z-50 items-end md:items-center justify-center">
+        <div class="absolute inset-0 bg-black/60" onclick="closeTaskModal()"></div>
+        <div class="relative w-full md:w-[520px] bg-tgSec rounded-t-2xl md:rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-3">
+                <h3 id="modalTitle" class="text-lg font-semibold">Добавить задачу</h3>
+                <button class="p-2 rounded-xl hover:bg-white/5" onclick="closeTaskModal()"><i
+                        class="fa-solid fa-xmark"></i></button>
             </div>
-        </div>
-
-        <!-- Фильтры -->
-        <div class="row mb-3">
-            <div class="col-12">
-                <div class="btn-group w-100">
-                    <button class="btn btn-outline-primary active" onclick="filterTasks('all')">Все</button>
-                    <button class="btn btn-outline-primary" onclick="filterTasks('today')">Сегодня</button>
-                    <button class="btn btn-outline-primary" onclick="filterTasks('tomorrow')">Завтра</button>
-                    <button class="btn btn-outline-primary" onclick="filterTasks('completed')">Выполненные</button>
+            <form id="taskForm" class="space-y-3">
+                <input type="hidden" name="task_id" />
+                <div>
+                    <label class="text-sm text-tgHint">Название</label>
+                    <input name="title" class="mt-1 w-full bg-black/30 rounded-xl px-3 py-2 outline-none" required />
                 </div>
-            </div>
-        </div>
-
-        <!-- Список задач -->
-        <div id="tasksList" class="row"></div>
-
-        <!-- Кнопка добавления -->
-        <div class="fixed-bottom p-3">
-            <button class="btn btn-primary w-100 rounded-pill" onclick="showAddTaskModal()">
-                <i class="fas fa-plus"></i> Добавить задачу
-            </button>
-        </div>
-    </div>
-
-    <!-- Модальное окно добавления задачи -->
-    <div class="modal fade" id="addTaskModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content bg-dark">
-                <div class="modal-header">
-                    <h5 class="modal-title">Добавить задачу</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <div>
+                    <label class="text-sm text-tgHint">Описание</label>
+                    <textarea name="description" rows="3"
+                        class="mt-1 w-full bg-black/30 rounded-xl px-3 py-2 outline-none"></textarea>
                 </div>
-                <div class="modal-body">
-                    <form id="taskForm">
-                        <div class="mb-3">
-                            <label class="form-label">Название</label>
-                            <input type="text" class="form-control" name="title" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Описание</label>
-                            <textarea class="form-control" name="description" rows="3"></textarea>
-                        </div>
-                        <div class="row">
-                            <div class="col-6">
-                                <label class="form-label">Дата</label>
-                                <input type="date" class="form-control" name="due_date" required>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label">Время</label>
-                                <input type="time" class="form-control" name="due_time" required>
-                            </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-6">
-                                <label class="form-label">Приоритет</label>
-                                <select class="form-select" name="priority">
-                                    <option value="low">Низкий</option>
-                                    <option value="medium" selected>Средний</option>
-                                    <option value="high">Высокий</option>
-                                </select>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label">Напоминание</label>
-                                <select class="form-select" name="reminder">
-                                    <option value="none">Не напоминать</option>
-                                    <option value="30min">За 30 минут</option>
-                                    <option value="5min">За 5 минут</option>
-                                    <option value="1min">За 1 минуту</option>
-                                </select>
-                            </div>
-                        </div>
-                    </form>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-sm text-tgHint">Дата</label>
+                        <input type="date" name="due_date"
+                            class="mt-1 w-full bg-black/30 rounded-xl px-3 py-2 outline-none" required />
+                    </div>
+                    <div>
+                        <label class="text-sm text-tgHint">Время</label>
+                        <input type="time" name="due_time"
+                            class="mt-1 w-full bg-black/30 rounded-xl px-3 py-2 outline-none" required />
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-primary" onclick="addTask()">Сохранить</button>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-sm text-tgHint">Приоритет</label>
+                        <select name="priority" class="mt-1 w-full bg-black/30 rounded-xl px-3 py-2 outline-none">
+                            <option value="low">Низкий</option>
+                            <option value="medium" selected>Средний</option>
+                            <option value="high">Высокий</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-sm text-tgHint">Напоминание</label>
+                        <select name="reminder" class="mt-1 w-full bg-black/30 rounded-xl px-3 py-2 outline-none">
+                            <option value="none">Не напоминать</option>
+                            <option value="30min">За 30 минут</option>
+                            <option value="5min">За 5 минут</option>
+                            <option value="1min">За 1 минуту</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+            <div class="mt-4 flex items-center justify-between">
+                <button id="deleteBtn" class="hidden text-red-400 hover:text-red-300" onclick="deleteFromModal()"><i
+                        class="fa-solid fa-trash mr-2"></i>Удалить</button>
+                <div class="ml-auto space-x-2">
+                    <button class="px-4 py-2 rounded-xl bg-white/10" onclick="closeTaskModal()">Отмена</button>
+                    <button id="saveBtn" class="px-4 py-2 rounded-xl bg-tgBtn text-tgBtnText"
+                        onclick="submitTask()">Сохранить</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Модальное окно профиля -->
-    <div class="modal fade" id="profileModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content bg-dark">
-                <div class="modal-header">
-                    <h5 class="modal-title">Профиль</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="profileStats"></div>
-                </div>
+    <!-- Profile Modal -->
+    <div id="profileModal" class="hidden fixed inset-0 z-50 items-center justify-center">
+        <div class="absolute inset-0 bg-black/60" onclick="closeProfile()"></div>
+        <div class="relative w-full md:w-[520px] bg-tgSec rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-semibold">Профиль</h3>
+                <button class="p-2 rounded-xl hover:bg-white/5" onclick="closeProfile()"><i
+                        class="fa-solid fa-xmark"></i></button>
             </div>
+            <div id="profileStats" class="space-y-3 text-sm"></div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+    // Telegram
     let tg = window.Telegram.WebApp;
     tg.expand();
     tg.enableClosingConfirmation();
+    <?php if(isset($_GET['flavor']) && $_GET['flavor']==='test'){ echo "let currentUserId = 1;"; } else { echo "let currentUserId = tg.initDataUnsafe.user.id;"; } ?>
 
-    <?php
-    if ($_GET['flavor'] == "test") {
-        echo "let currentUserId = 1;";
-    } else {
-        echo "let currentUserId = tg.initDataUnsafe.user.id;";
-    }
-    ?>
+    // State
     let currentFilter = 'all';
+    let selectedDate = new Date();
+    let lastLoadedTasks = [];
 
-    // Инициализация
-    $(document).ready(function() {
-        loadTasks();
+    // Helpers
+    const fmt = (d) => d.toISOString().slice(0, 10);
+    const pad = (n) => n < 10 ? '0' + n : '' + n;
+    const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+
+    function escapeHtml(unsafe) {
+        return $('<div/>').text(unsafe || '').html();
+    }
+
+    // Init
+    $(function() {
         setupDateDefaults();
         saveUserIfNeeded();
+        bindUI();
+        loadTasks();
+        renderCalendar();
     });
+
+    function bindUI() {
+        $('#prevMonth').on('click', () => {
+            selectedDate.setMonth(selectedDate.getMonth() - 1);
+            renderCalendar();
+        });
+        $('#nextMonth').on('click', () => {
+            selectedDate.setMonth(selectedDate.getMonth() + 1);
+            renderCalendar();
+        });
+        $('.tabBtn').each(function() {
+            $(this).on('click', () => {
+                $('.tabBtn').attr('data-active', 'false');
+                $(this).attr('data-active', 'true');
+                currentFilter = $(this).data('filter');
+                loadTasks(currentFilter);
+            });
+        });
+        $('#searchInput').on('input', searchTasks);
+    }
 
     function setupDateDefaults() {
         const now = new Date();
-        const today = now.toISOString().split('T')[0];
-        const time = now.toTimeString().substr(0, 5);
-
+        const today = fmt(now);
+        const time = pad(now.getHours()) + ":" + pad(now.getMinutes());
         $('input[name="due_date"]').val(today);
         $('input[name="due_time"]').val(time);
     }
 
     function saveUserIfNeeded() {
-        // Сохраняем пользователя в базу для напоминаний
         $.post('handler.php?action=save_user', {
             user_id: currentUserId,
             chat_id: currentUserId,
             first_name: tg.initDataUnsafe.user.first_name || '',
             last_name: tg.initDataUnsafe.user.last_name || '',
             username: tg.initDataUnsafe.user.username || ''
-        }, function(response) {
-            console.log('User saved:', response);
         });
     }
 
+    // Calendar
+    function renderCalendar() {
+        const d = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+        $('#monthLabel').text(months[d.getMonth()] + ' ' + d.getFullYear());
+        const startDay = (d.getDay() + 6) % 7; // Monday first
+        const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        const grid = $('#calendarGrid');
+        grid.empty();
+
+        // Build map date=>count
+        const map = {};
+        (lastLoadedTasks || []).forEach(t => {
+            map[t.due_date] = (map[t.due_date] || 0) + 1;
+        });
+
+        for (let i = 0; i < startDay; i++) grid.append('<div class="h-10"></div>');
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(day);
+            const isToday = dateStr === fmt(new Date());
+            const isSelected = dateStr === fmt(selectedDate);
+            const has = map[dateStr] > 0;
+            const dot = has ?
+                '<span class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>' :
+                '';
+            const cls = 'relative h-10 flex items-center justify-center rounded-full cursor-pointer ' + (isSelected ?
+                'bg-white/20 ' : 'hover:bg-white/10 ') + (isToday ? 'ring-2 ring-white/30 ' : '');
+            const el = $('<div class="' + cls + '"><span>' + day + '</span>' + dot + '</div>');
+            el.on('click', () => {
+                selectedDate = new Date(dateStr);
+                renderCalendar();
+                updateEventCard();
+            });
+            grid.append(el);
+        }
+        updateEventCard();
+    }
+
+    function updateEventCard() {
+        const dateStr = fmt(selectedDate);
+        const tasks = (lastLoadedTasks || []).filter(t => t.due_date === dateStr).sort((a, b) => a.due_time
+            .localeCompare(b.due_time));
+        if (tasks.length === 0) {
+            $('#eventTitle').text('Нет задач');
+            $('#eventDate').text(dateStr);
+            $('#eventTime').text('');
+            return;
+        }
+        const t = tasks[0];
+        $('#eventTitle').text(t.title);
+        $('#eventDate').text(t.due_date);
+        $('#eventTime').text(t.due_time);
+    }
+
+    // Tasks
     function loadTasks(filter = 'all') {
         $.get(`handler.php?action=get&user_id=${currentUserId}&filter=${filter}`, function(response) {
             try {
-                console.log('Raw response:', response);
                 if (response.tasks !== undefined) {
-                    renderTasks(response.tasks);
+                    lastLoadedTasks = response.tasks;
+                    renderCalendar();
+                    renderBuckets(response.tasks);
                 } else if (response.error) {
-                    console.error('Error loading tasks:', response.error);
-                    $('#tasksList').html('<div class="col-12 text-center text-muted">Ошибка: ' + response
-                        .error + '</div>');
+                    $('#tasksBuckets').html(
+                        `<div class='text-center text-tgHint'>Ошибка: ${response.error}</div>`);
                 } else {
-                    console.error('Invalid response format:', response);
-                    $('#tasksList').html(
-                        '<div class="col-12 text-center text-muted">Неверный формат ответа сервера</div>');
+                    $('#tasksBuckets').html(
+                    `<div class='text-center text-tgHint'>Неверный ответ сервера</div>`);
                 }
             } catch (e) {
-                console.error('JSON parse error:', e, 'Data:', data);
-                $('#tasksList').html(
-                    '<div class="col-12 text-center text-muted">Ошибка обработки данных</div>');
+                $('#tasksBuckets').html(`<div class='text-center text-tgHint'>Ошибка обработки</div>`);
             }
-        }).fail(function(xhr, status, error) {
-            console.error('AJAX error:', status, error);
-            $('#tasksList').html('<div class="col-12 text-center text-muted">Ошибка соединения: ' + xhr.status +
-                '</div>');
+        }).fail(function(xhr) {
+            $('#tasksBuckets').html(
+                `<div class='text-center text-tgHint'>Ошибка соединения: ${xhr.status}</div>`);
         });
     }
 
-    function renderTasks(tasks) {
-        const container = $('#tasksList');
-        container.empty();
+    function renderBuckets(tasks) {
+        const todayStr = fmt(new Date());
+        const tomorrowStr = fmt(new Date(Date.now() + 86400000));
+        const buckets = {
+            'Сегодня': tasks.filter(t => t.due_date === todayStr),
+            'Завтра': tasks.filter(t => t.due_date === tomorrowStr),
+            'Предстоящие': tasks.filter(t => t.due_date > tomorrowStr)
+        };
+        const cont = $('#tasksBuckets');
+        cont.empty();
+        Object.keys(buckets).forEach(title => {
+            const list = buckets[title];
+            const section = $('<div></div>');
+            section.append(`<div class="text-sm font-semibold mb-2">${title}</div>`);
+            if (list.length === 0) {
+                section.append('<div class="text-sm text-tgHint">Нет задач</div>');
+                cont.append(section);
+                return;
+            }
+            list.sort((a, b) => a.due_time.localeCompare(b.due_time));
+            list.forEach(task => {
+                section.append(taskRow(task));
+            });
+            cont.append(section);
+        });
+    }
 
-        if (tasks.length === 0) {
-            container.html('<div class="col-12 text-center text-muted">Нет задач</div>');
-            return;
-        }
-
-        tasks.forEach(task => {
-            const taskElement = `
-            <div class="col-12">
-                <div class="card priority-${task.priority} ${task.status === 'completed' ? 'completed' : ''}">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <h5 class="card-title">${escapeHtml(task.title)}</h5>
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-link text-white" data-bs-toggle="dropdown">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-dark">
-                                    <li><a class="dropdown-item" href="#" onclick="toggleTaskStatus(${task.id}, '${task.status}')">
-                                        ${task.status === 'completed' ? 'Вернуть' : 'Выполнить'}
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="editTask(${task.id})">Редактировать</a></li>
-                                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteTask(${task.id})">Удалить</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                        ${task.description ? `<p class="card-text text-muted">${escapeHtml(task.description)}</p>` : ''}
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">
-                                <i class="fas fa-calendar"></i> ${task.due_date} 
-                                <i class="fas fa-clock ms-2"></i> ${task.due_time}
-                            </small>
-                            <span class="badge bg-${getPriorityBadge(task.priority)}">
-                                ${getPriorityText(task.priority)}
-                            </span>
-                        </div>
-                        ${task.reminder !== 'none' ? 
-                            `<small class="text-info"><i class="fas fa-bell"></i> Напоминание: ${getReminderText(task.reminder)}</small>` : ''}
-                    </div>
+    function taskRow(task) {
+        const done = task.status === 'completed';
+        const prBadge = task.priority === 'high' ? 'bg-red-500' : (task.priority === 'medium' ? 'bg-yellow-500' :
+            'bg-emerald-500');
+        const el = $(`
+        <div class="group flex items-start gap-3 px-3 py-3 rounded-2xl hover:bg-white/5 ${done?'opacity-70':''}">
+          <button class="mt-1 w-5 h-5 rounded-full border border-white/30 flex items-center justify-center">${done?'<i class=\'fa-solid fa-check text-xs\'></i>':''}</button>
+          <div class="flex-1">
+            <div class="flex items-start justify-between gap-2">
+              <div class="font-medium">${escapeHtml(task.title)}</div>
+              <div class="relative">
+                <button class="p-1 rounded hover:bg-white/10"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                <div class="hidden absolute right-0 mt-1 w-44 bg-tgSec rounded-xl shadow-soft overflow-hidden text-sm z-10 group-hover:block">
+                  <a class="block px-3 py-2 hover:bg-white/10 cursor-pointer">${done?'Вернуть':'Выполнить'}</a>
+                  <a class="block px-3 py-2 hover:bg-white/10 cursor-pointer">Редактировать</a>
+                  <a class="block px-3 py-2 hover:bg-white/10 text-red-400 cursor-pointer">Удалить</a>
                 </div>
+              </div>
             </div>
-        `;
-            container.append(taskElement);
-        });
+            ${task.description? `<div class="text-sm text-tgHint mt-1">${escapeHtml(task.description)}</div>`:''}
+            <div class="mt-2 flex items-center justify-between text-xs text-tgHint">
+              <div><i class="fa-solid fa-calendar"></i> ${task.due_date} <i class="fa-solid fa-clock ml-2"></i> ${task.due_time}</div>
+              <span class="inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full ${prBadge}"></span> ${task.priority}</span>
+            </div>
+          </div>
+        </div>`);
+        // menu actions
+        el.find('a:contains("Выполнить"),a:contains("Вернуть")').on('click', () => toggleTaskStatus(task.id, task
+            .status));
+        el.find('a:contains("Редактировать")').on('click', () => editTask(task));
+        el.find('a:contains("Удалить")').on('click', () => deleteTask(task.id));
+        el.find('button').first().on('click', () => toggleTaskStatus(task.id, task.status));
+        return el;
     }
 
-    function escapeHtml(unsafe) {
-        if (!unsafe) return '';
-        return unsafe.replace(/[&<"']/g, m => ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '"': '&quot;',
-            "'": '&#039;'
-        } [m]));
+    // Search
+    function searchTasks() {
+        const q = $('#searchInput').val();
+        if (q.length > 2) {
+            $.get(`handler.php?action=search&user_id=${currentUserId}&q=${encodeURIComponent(q)}`, function(data) {
+                try {
+                    const response = JSON.parse(data);
+                    if (response.tasks) {
+                        lastLoadedTasks = response.tasks;
+                        renderBuckets(response.tasks);
+                        renderCalendar();
+                    }
+                } catch (e) {}
+            });
+        } else if (q.length === 0) {
+            loadTasks(currentFilter);
+        }
     }
 
-    function getPriorityBadge(priority) {
-        const badges = {
-            high: 'danger',
-            medium: 'warning',
-            low: 'success'
-        };
-        return badges[priority] || 'secondary';
-    }
-
-    function getPriorityText(priority) {
-        const texts = {
-            high: 'Высокий',
-            medium: 'Средний',
-            low: 'Низкий'
-        };
-        return texts[priority] || 'Неизвестно';
-    }
-
-    function getReminderText(reminder) {
-        const texts = {
-            '30min': 'за 30 мин',
-            '5min': 'за 5 мин',
-            '1min': 'за 1 мин'
-        };
-        return texts[reminder] || 'Неизвестно';
-    }
-
+    // CRUD
     function showAddTaskModal() {
         $('#taskForm')[0].reset();
         setupDateDefaults();
-        new bootstrap.Modal(document.getElementById('addTaskModal')).show();
+        $('#modalTitle').text('Добавить задачу');
+        $('#deleteBtn').addClass('hidden');
+        openTaskModal();
     }
 
-    function addTask() {
-        // Собираем данные из формы
-        const formData = {
+    function editTask(task) {
+        $('#modalTitle').text('Изменить задачу');
+        $('#deleteBtn').removeClass('hidden');
+        openTaskModal();
+        $('input[name="task_id"]').val(task.id);
+        $('input[name="title"]').val(task.title);
+        $('textarea[name="description"]').val(task.description || '');
+        $('input[name="due_date"]').val(task.due_date);
+        $('input[name="due_time"]').val(task.due_time);
+        $('select[name="priority"]').val(task.priority || 'medium');
+        $('select[name="reminder"]').val(task.reminder || 'none');
+    }
+
+    function openTaskModal() {
+        $('#taskModal').removeClass('hidden').addClass('flex');
+    }
+
+    function closeTaskModal() {
+        $('#taskModal').addClass('hidden').removeClass('flex');
+    }
+
+    function submitTask() {
+        const data = {
+            user_id: currentUserId,
             title: $('input[name="title"]').val(),
             description: $('textarea[name="description"]').val(),
             due_date: $('input[name="due_date"]').val(),
@@ -362,59 +485,40 @@
             priority: $('select[name="priority"]').val(),
             reminder: $('select[name="reminder"]').val()
         };
-
-        // Валидация
-        if (!formData.title || !formData.due_date || !formData.due_time) {
-            tg.showPopup({
-                title: 'Ошибка',
-                message: 'Заполните обязательные поля'
-            });
-            return;
-        }
-
-        console.log('Sending data:', formData);
-
-        // Отправляем POST запрос
-        $.ajax({
-            url: 'handler.php?action=add',
-            type: 'POST',
-            data: {
-                user_id: currentUserId,
-                ...formData
-            },
-            success: function(result) {
-
-                try {
-
-                    if (result.success) {
-                        $('#addTaskModal').modal('hide');
-                        loadTasks(currentFilter);
-                        tg.showPopup({
-                            title: 'Успех',
-                            message: 'Задача добавлена'
-                        });
-                    } else {
-                        tg.showPopup({
-                            title: 'Ошибка',
-                            message: result.error || 'Не удалось добавить задачу'
-                        });
-                    }
-                } catch (e) {
-                    console.error('JSON parse error:', e);
+        const id = $('input[name="task_id"]').val();
+        if (id) {
+            data.task_id = id;
+            $.post('handler.php?action=update', data, function(result) {
+                if (result.success) {
+                    closeTaskModal();
+                    loadTasks(currentFilter);
+                } else {
                     tg.showPopup({
                         title: 'Ошибка',
-                        message: 'Ошибка сервера:' + e
+                        message: result.error || 'Не удалось обновить'
                     });
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX error:', status, error);
-                tg.showPopup({
-                    title: 'Ошибка',
-                    message: 'Ошибка соединения'
-                });
-            }
-        });
+            });
+        } else {
+            $.post('handler.php?action=add', data, function(result) {
+                if (result.success) {
+                    closeTaskModal();
+                    loadTasks(currentFilter);
+                } else {
+                    tg.showPopup({
+                        title: 'Ошибка',
+                        message: result.error || 'Не удалось добавить'
+                    });
+                }
+            });
+        }
+    }
+
+    function deleteFromModal() {
+        const id = $('input[name="task_id"]').val();
+        if (!id) return;
+        deleteTask(id);
+        closeTaskModal();
     }
 
     function deleteTask(taskId) {
@@ -423,16 +527,12 @@
                 user_id: currentUserId,
                 task_id: taskId
             }, function(result) {
-                try {
-                    if (result.success) {
-                        loadTasks(currentFilter);
-                        tg.showPopup({
-                            title: 'Успех',
-                            message: 'Задача удалена'
-                        });
-                    }
-                } catch (e) {
-                    console.error('Error:', e);
+                if (result.success) {
+                    loadTasks(currentFilter);
+                    tg.showPopup({
+                        title: 'Успех',
+                        message: 'Задача удалена'
+                    });
                 }
             });
         }
@@ -440,13 +540,10 @@
 
     function toggleTaskStatus(taskId, currentStatus) {
         const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
-
-        // Создаем объект FormData для отправки JSON
         const formData = new FormData();
         formData.append('user_id', currentUserId);
         formData.append('task_id', taskId);
         formData.append('status', newStatus);
-
         $.ajax({
             url: 'handler.php?action=update',
             type: 'POST',
@@ -454,112 +551,56 @@
             processData: false,
             contentType: false,
             success: function(result) {
-                try {
-
-                    if (result.success) {
-                        loadTasks(currentFilter);
-                    }
-                } catch (e) {
-                    console.error('Error:', e);
+                if (result.success) {
+                    loadTasks(currentFilter);
                 }
             }
         });
     }
 
-    function filterTasks(filter) {
-        currentFilter = filter;
-        $('.btn-outline-primary').removeClass('active');
-        $(`.btn-outline-primary:contains(${getFilterText(filter)})`).addClass('active');
-        loadTasks(filter);
-    }
-
-    function getFilterText(filter) {
-        const texts = {
-            all: 'Все',
-            today: 'Сегодня',
-            tomorrow: 'Завтра',
-            completed: 'Выполненные'
-        };
-        return texts[filter] || filter;
-    }
-
-    function searchTasks() {
-        const query = $('#searchInput').val();
-        if (query.length > 2) {
-            $.get(`handler.php?action=search&user_id=${currentUserId}&q=${encodeURIComponent(query)}`, function(data) {
-                try {
-                    const response = JSON.parse(data);
-                    if (response.tasks) {
-                        renderTasks(response.tasks);
-                    }
-                } catch (e) {
-                    console.error('Error:', e);
-                }
-            });
-        } else if (query.length === 0) {
-            loadTasks(currentFilter);
-        }
-    }
-
+    // Profile
     function showProfile() {
         $.get(`handler.php?action=stats&user_id=${currentUserId}`, function(data) {
             try {
                 const response = JSON.parse(data);
                 if (response.stats) {
-                    const stats = response.stats;
-                    let html = `
-                    <div class="text-center mb-4">
-                        <h4>${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name || ''}</h4>
-                        <p class="text-muted">@${tg.initDataUnsafe.user.username || 'без username'}</p>
-                    </div>
-                    <div class="row text-center">
-                `;
-
-                    const pending = stats.pending || {
+                    const s = response.stats;
+                    const p = s.pending || {
                         count: 0
                     };
-                    const completed = stats.completed || {
+                    const c = s.completed || {
                         count: 0
                     };
-                    const cancelled = stats.cancelled || {
+                    const x = s.cancelled || {
                         count: 0
                     };
-
-                    html += `
-                    <div class="col-4">
-                        <div class="bg-primary rounded p-3">
-                            <h3>${pending.count}</h3>
-                            <small>В работе</small>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="bg-success rounded p-3">
-                            <h3>${completed.count}</h3>
-                            <small>Выполнено</small>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="bg-secondary rounded p-3">
-                            <h3>${cancelled.count}</h3>
-                            <small>Отменено</small>
-                        </div>
-                    </div>
-                `;
-
-                    html += '</div>';
-                    $('#profileStats').html(html);
-                    new bootstrap.Modal(document.getElementById('profileModal')).show();
+                    $('#profileStats').html(`<div class='text-center mb-4'>
+        <div class='text-xl font-semibold mb-1'>${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name||''}</div>
+        <div class='text-sm text-tgHint'>@${tg.initDataUnsafe.user.username||'без username'}</div>
+      </div>
+      <div class='grid grid-cols-3 gap-2 text-center'>
+        <div class='rounded-2xl p-3 bg-emerald-500/20'><div class='text-2xl font-semibold'>${p.count}</div><div class='text-xs'>В работе</div></div>
+        <div class='rounded-2xl p-3 bg-blue-500/20'><div class='text-2xl font-semibold'>${c.count}</div><div class='text-xs'>Выполнено</div></div>
+        <div class='rounded-2xl p-3 bg-white/10'><div class='text-2xl font-semibold'>${x.count}</div><div class='text-xs'>Отменено</div></div>
+      </div>`);
+                    openProfile();
                 }
-            } catch (e) {
-                console.error('Error:', e);
-            }
+            } catch (e) {}
         });
     }
 
-    // Добавляем обработчик нажатия Enter в форме
+    function openProfile() {
+        $('#profileModal').removeClass('hidden').addClass('flex');
+    }
+
+    function closeProfile() {
+        $('#profileModal').addClass('hidden').removeClass('flex');
+    }
+
+    // Enter submit in modal
     $(document).on('keypress', '#taskForm input', function(e) {
         if (e.which === 13) {
-            addTask();
+            submitTask();
             e.preventDefault();
         }
     });
