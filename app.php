@@ -60,27 +60,23 @@
     <!-- Top bar -->
     <header class="sticky top-0 z-30 backdrop-blur bg-black/10">
         <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-            <button id="backBtn" class="p-2 rounded-xl bg-secondary hover:opacity-90"><i
-                    class="fa-solid fa-angle-left"></i></button>
+            <!-- Кнопку-стрелку убрали -->
             <h1 class="text-xl font-semibold">Джарвис</h1>
             <div class="ml-auto flex items-center gap-2">
                 <div class="relative">
                     <input id="searchInput"
-                        class="peer w-56 md:w-72 bg-secondary rounded-xl pl-10 pr-3 py-2 outline-none placeholder-hint text-sm"
+                        class="peer w-56 md:w-96 bg-secondary rounded-xl pl-10 pr-3 py-2 outline-none placeholder-hint text-sm"
                         placeholder="Поиск задач..." />
                     <i
                         class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-hint peer-focus:text-white"></i>
                 </div>
-                <button class="p-2 rounded-xl bg-secondary hover:opacity-90" onclick="showProfile()"><i
-                        class="fa-solid fa-user"></i></button>
-                <button class="p-2 rounded-xl bg-secondary hover:opacity-90" onclick="showAddTaskModal()"><i
-                        class="fa-solid fa-plus"></i></button>
+                <!-- Кнопки Профиль и Плюс в шапке удалены -->
             </div>
         </div>
     </header>
 
     <main class="max-w-3xl mx-auto p-4 pt-3 space-y-4 pb-28">
-        <!-- pb-28 чтобы 'Предстоящие' не скрывались под нижним баром -->
+        <!-- pb-28 для плавающей кнопки -->
         <!-- Calendar card -->
         <section class="bg-secondary rounded-2xl shadow-soft p-4">
             <div class="flex items-center justify-between">
@@ -115,30 +111,35 @@
             </div>
         </section>
 
-        <!-- Tasks list (Сегодня/Завтра/Предстоящие) -->
+        <!-- Мои задачи (Сегодня/Завтра/Предстоящие) -->
         <section class="bg-secondary rounded-2xl p-2">
             <div class="p-3">
                 <h2 class="text-lg font-semibold mb-2">Мои задачи</h2>
                 <div id="tasksBuckets" class="space-y-6"></div>
             </div>
         </section>
+
+        <!-- Дополнительные секции после Предстоящие: Невыполненные и Выполненные -->
+        <section class="bg-secondary rounded-2xl p-2">
+            <div class="p-3">
+                <h2 class="text-lg font-semibold mb-2">Невыполненные</h2>
+                <div id="tasksPending" class="space-y-3"></div>
+            </div>
+        </section>
+        <section class="bg-secondary rounded-2xl p-2">
+            <div class="p-3">
+                <h2 class="text-lg font-semibold mb-2">Выполненные</h2>
+                <div id="tasksCompleted" class="space-y-3"></div>
+            </div>
+        </section>
     </main>
 
-    <!-- Bottom segmented control -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-secondary backdrop-blur border-t border-white/5">
-        <div class="max-w-3xl mx-auto flex items-center justify-between px-4 py-3">
-            <button class="tabBtn data-[active=true]:bg-white/10 rounded-xl px-4 py-2" data-filter="all">Задачи</button>
-            <button class="tabBtn data-[active=true]:bg-white/10 rounded-xl px-4 py-2"
-                data-filter="pending">Невыполненные</button>
-            <button class="tabBtn data-[active=true]:bg-white/10 rounded-xl px-4 py-2"
-                data-filter="completed">Выполненные</button>
-        </div>
-    </nav>
+    <!-- Нижний бар фильтров удалён полностью -->
 
-    <!-- Плавающая кнопка добавления (непрозрачная) -->
+    <!-- Плавающая кнопка добавления (оставили, непрозрачная) -->
     <button
-        class="fixed bottom-20 right-5 w-14 h-14 rounded-full bg-accent text-white shadow-soft flex items-center justify-center hover:opacity-90"
-        onclick="showAddTaskModal()">
+        class="fixed bottom-6 right-5 w-14 h-14 rounded-full bg-accent text-white shadow-soft flex items-center justify-center hover:opacity-90"
+        onclick="showAddTaskModal()" aria-label="Добавить задачу">
         <i class="fa-solid fa-plus"></i>
     </button>
 
@@ -205,7 +206,7 @@
             </div>
         </div>
     </div>
-    <!-- Profile Modal -->
+    <!-- Profile Modal (оставим на будущее, кнопка вызова скрыта) -->
     <div id="profileModal" class="hidden fixed inset-0 z-50 items-center justify-center">
         <div class="absolute inset-0 bg-black/60" onclick="closeProfile()"></div>
         <div class="relative w-full md:w-[520px] bg-secondary rounded-2xl p-4">
@@ -238,7 +239,6 @@
     ?>
 
     // State
-    let currentFilter = 'all';
     let selectedDate = new Date();
     let lastLoadedTasks = [];
     let openMenuId = null; // для меню задачи
@@ -247,7 +247,6 @@
     const fmt = (d) => d.toISOString().slice(0, 10);
     const pad = (n) => n < 10 ? '0' + n : '' + n;
     const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
-    const weekdayShort = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']; // на будущее
 
     function escapeHtml(unsafe) {
         return $('<div/>').text(unsafe || '').html();
@@ -280,14 +279,6 @@
         $('#nextMonth').on('click', () => {
             selectedDate.setMonth(selectedDate.getMonth() + 1);
             renderCalendar();
-        });
-        $('.tabBtn').each(function() {
-            $(this).on('click', () => {
-                $('.tabBtn').attr('data-active', 'false');
-                $(this).attr('data-active', 'true');
-                currentFilter = $(this).data('filter');
-                loadTasks(currentFilter);
-            });
         });
         $('#searchInput').on('input', searchTasks);
     }
@@ -363,15 +354,15 @@
         $('#eventDate').text(t.due_date);
         $('#eventTime').text(t.due_time);
     }
-
     // Tasks
-    function loadTasks(filter = 'all') {
-        $.get(`handler.php?action=get&user_id=${currentUserId}&filter=${filter}`, function(response) {
+    function loadTasks() {
+        $.get(`handler.php?action=get&user_id=${currentUserId}&filter=all`, function(response) {
             try {
                 if (response.tasks !== undefined) {
                     lastLoadedTasks = response.tasks;
                     renderCalendar();
                     renderBuckets(response.tasks);
+                    renderStatusBlocks(response.tasks);
                 } else if (response.error) {
                     $('#tasksBuckets').html(
                         `<div class='text-center text-hint'>Ошибка: ${response.error}</div>`);
@@ -412,6 +403,31 @@
             });
             cont.append(section);
         });
+    }
+
+    function renderStatusBlocks(tasks) {
+        const pending = tasks.filter(t => t.status !== 'completed');
+        const completed = tasks.filter(t => t.status === 'completed');
+
+        // Pending
+        const pendCont = $('#tasksPending');
+        pendCont.empty();
+        if (pending.length === 0) {
+            pendCont.append('<div class="text-sm text-hint">Нет задач</div>');
+        } else {
+            pending.sort((a, b) => (a.due_date + a.due_time).localeCompare(b.due_date + b.due_time));
+            pending.forEach(t => pendCont.append(taskRow(t)));
+        }
+
+        // Completed
+        const compCont = $('#tasksCompleted');
+        compCont.empty();
+        if (completed.length === 0) {
+            compCont.append('<div class="text-sm text-hint">Нет задач</div>');
+        } else {
+            completed.sort((a, b) => (a.due_date + a.due_time).localeCompare(b.due_date + b.due_time));
+            completed.forEach(t => compCont.append(taskRow(t)));
+        }
     }
 
     function priorityLabel(p) {
@@ -489,15 +505,15 @@
                     if (response.tasks) {
                         lastLoadedTasks = response.tasks;
                         renderBuckets(response.tasks);
+                        renderStatusBlocks(response.tasks);
                         renderCalendar();
                     }
                 } catch (e) {}
             });
         } else if (q.length === 0) {
-            loadTasks(currentFilter);
+            loadTasks();
         }
     }
-
     // CRUD
     function showAddTaskModal() {
         $('#taskForm')[0].reset();
@@ -544,7 +560,7 @@
             $.post('handler.php?action=update', data, function(result) {
                 if (result.success) {
                     closeTaskModal();
-                    loadTasks(currentFilter);
+                    loadTasks();
                 } else {
                     alert(result.error || 'Не удалось обновить');
                 }
@@ -553,7 +569,7 @@
             $.post('handler.php?action=add', data, function(result) {
                 if (result.success) {
                     closeTaskModal();
-                    loadTasks(currentFilter);
+                    loadTasks();
                 } else {
                     alert(result.error || 'Не удалось добавить');
                 }
@@ -575,7 +591,7 @@
                 task_id: taskId
             }, function(result) {
                 if (result.success) {
-                    loadTasks(currentFilter);
+                    loadTasks();
                 }
             });
         }
@@ -595,13 +611,13 @@
             contentType: false,
             success: function(result) {
                 if (result.success) {
-                    loadTasks(currentFilter);
+                    loadTasks();
                 }
             }
         });
     }
 
-    // Profile
+    // Profile (без кнопки вызова)
     function showProfile() {
         $.get(`handler.php?action=stats&user_id=${currentUserId}`, function(data) {
             try {
