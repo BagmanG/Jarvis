@@ -691,14 +691,6 @@
     function closeProfile() {
         $('#profileModal').addClass('hidden').removeClass('flex');
     }
-
-    // Enter submit in modal
-    $(document).on('keypress', '#taskForm input', function(e) {
-        if (e.which === 13) {
-            submitTask();
-            e.preventDefault();
-        }
-    });
     </script>
 </body>
 
