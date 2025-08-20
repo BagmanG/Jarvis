@@ -240,7 +240,7 @@
 
                 // Парсим JSON ответ
                 const response = JSON.parse(data);
-
+                console.log(response);
                 // Проверяем наличие tasks в ответе
                 if (response.tasks !== undefined) {
                     //renderTasks(response.tasks);
