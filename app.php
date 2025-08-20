@@ -383,9 +383,9 @@
                 ...formData
             },
             success: function(response) {
-                console.log('Response:', response);
+                console.log('Response:', result);
                 try {
-                    const result = JSON.parse(response);
+
                     if (result.success) {
                         $('#addTaskModal').modal('hide');
                         loadTasks(currentFilter);
@@ -422,9 +422,8 @@
             $.post('handler.php?action=delete', {
                 user_id: currentUserId,
                 task_id: taskId
-            }, function(response) {
+            }, function(result) {
                 try {
-                    const result = JSON.parse(response);
                     if (result.success) {
                         loadTasks(currentFilter);
                         tg.showPopup({
@@ -454,9 +453,9 @@
             data: formData,
             processData: false,
             contentType: false,
-            success: function(response) {
+            success: function(result) {
                 try {
-                    const result = JSON.parse(response);
+
                     if (result.success) {
                         loadTasks(currentFilter);
                     }
