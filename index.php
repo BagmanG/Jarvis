@@ -68,12 +68,17 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
                 
                 // Добавляем сообщения в историю
                 $history = GPT::AddToHistory('user', $transcription, $history);
-                $history = GPT::AddToHistory('assistant', $response, $history);
+                $history = GPT::AddToHistory('assistant', $response['content'], $history);
                 
                 // Сохраняем обновленную историю
                 saveMessageHistory($history);
                 
-                sendMessage($chat_id, $response);
+                sendMessage($chat_id, $response['content']);
+                
+                // Debug: если была вызвана функция, логируем это
+                if ($response['has_function_call']) {
+                    sendMessage($chat_id, "🔧 Функция была выполнена успешно!");
+                }
                 return;
             } catch (Exception $e) {
                 logError('Voice transcription error: ' . $e->getMessage());
@@ -211,12 +216,18 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
             
             // Добавляем сообщения в историю
             $history = GPT::AddToHistory('user', $text, $history);
-            $history = GPT::AddToHistory('assistant', $response, $history);
+            $history = GPT::AddToHistory('assistant', $response['content'], $history);
             
             // Сохраняем обновленную историю - ИСПРАВЛЕНО: убрано self::
             saveMessageHistory($history);
             
-            sendMessage($chat_id, $response);
+            // Отправляем ответ пользователю
+            sendMessage($chat_id, $response['content']);
+            
+            // Debug: если была вызвана функция, логируем это
+            if ($response['has_function_call']) {
+                sendMessage($chat_id, "🔧 Функция была выполнена успешно!");
+            }
             
         } catch (Exception $e) {
             logError('GPT processing error: ' . $e->getMessage());
