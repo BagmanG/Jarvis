@@ -105,7 +105,7 @@ class TaskHandler {
     }
     
     // Добавление задачи
-    private static function addTask($args, $userId): array {
+    public static function addTask($args, $userId): array {
         try {
             // Логируем входящие параметры для отладки
             error_log('TaskHandler::addTask called with args: ' . json_encode($args) . ', userId: ' . $userId);
@@ -177,7 +177,7 @@ class TaskHandler {
     }
     
     // Удаление задачи
-    private static function deleteTask($args, $userId): array {
+    public static function deleteTask($args, $userId): array {
         try {
             $taskId = $args['task_id'] ?? 0;
             
@@ -220,7 +220,7 @@ class TaskHandler {
     }
     
     // Получение списка задач
-    private static function listTasks($args, $userId): array {
+    public static function listTasks($args, $userId): array {
         try {
             $filter = $args['filter'] ?? 'all';
             
@@ -283,7 +283,7 @@ class TaskHandler {
     }
     
     // Парсинг даты из естественного языка
-    private static function parseDate($dateInput): string {
+    public static function parseDate($dateInput): string {
         $dateInput = strtolower(trim($dateInput));
         
         switch ($dateInput) {
@@ -308,7 +308,7 @@ class TaskHandler {
     }
     
     // Получение соединения с базой данных
-    private static function getConnection() {
+    public static function getConnection() {
         require_once __DIR__ . '/../config.php';
         
         $host = 'localhost';
