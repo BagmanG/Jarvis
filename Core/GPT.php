@@ -25,7 +25,7 @@ class GPT {
         self::$system_prompt = "Ты — Джарвис, искуственный интеллект, созданный для помощи в достижении целей. Ты отвечаешь вежливо, лаконично и по делу. Ты всегда отвечаешь без форматирования, только текст! Пользователя зовут '$name' поэтому всегда обращайся к нему по имени. Вот информация о пользователе: $about";
     }
 
-    public static function GetMessage(string $userMessage, array $history = []): array {
+    public static function GetMessage(string $userMessage, array $history = [], int $chat_id = null): array {
         // Проверка, что API ключ установлен
         if (empty(self::$api_key)) {
             throw new Exception('API key is not set. Please call GPT::Init() first.');
@@ -89,7 +89,10 @@ class GPT {
             $toolCalls = $responseData['choices'][0]['message']['tool_calls'];
             $functionResults = [];
             
-            error_log('GPT::GetMessage - Function calls detected: ' . json_encode($toolCalls));
+            // Отправляем отладочную информацию в Telegram
+            if (function_exists('sendMessage') && isset($chat_id)) {
+                sendMessage($chat_id, "🔍 Обнаружены вызовы функций: " . json_encode($toolCalls));
+            }
             
             foreach ($toolCalls as $toolCall) {
                 if (isset($toolCall['function'])) {
@@ -99,11 +102,18 @@ class GPT {
                     // Получаем user_id из текущего контекста
                     $userId = self::getCurrentUserId();
                     
-                    error_log('GPT::GetMessage - Calling function: ' . $functionName . ' with userId: ' . $userId);
+                    // Отправляем отладочную информацию в Telegram
+                    if (function_exists('sendMessage') && $chat_id) {
+                        sendMessage($chat_id, "🔧 Вызываю функцию: $functionName с userId: $userId");
+                    }
                     
                     // Вызываем функцию
                     $result = TaskHandler::handleFunctionCall($functionName, $arguments, $userId);
-                    error_log('GPT::GetMessage - Function result: ' . json_encode($result));
+                    
+                    // Отправляем результат в Telegram
+                    if (function_exists('sendMessage') && $chat_id) {
+                        sendMessage($chat_id, "📊 Результат функции: " . json_encode($result));
+                    }
                     
                     $functionResults[] = [
                         'tool_call_id' => $toolCall['id'],
@@ -158,8 +168,10 @@ class GPT {
             }
         }
         
-        // Если не удалось получить user_id, логируем ошибку
-        error_log('Warning: Could not get user_id from Vars class. User ID: ' . (Vars::getUserId() ?? 'null'));
+        // Если не удалось получить user_id, отправляем предупреждение в Telegram
+        if (function_exists('sendMessage') && isset($GLOBALS['debug_chat_id'])) {
+            sendMessage($GLOBALS['debug_chat_id'], "⚠️ Не удалось получить user_id из класса Vars. User ID: " . (Vars::getUserId() ?? 'null'));
+        }
         
         // Возвращаем 1 как fallback для тестирования
         return 1;

@@ -68,8 +68,11 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
                 // Получаем историю сообщений - ИСПРАВЛЕНО: убрано self::
                 $history = getMessageHistory();
                 
+                // Устанавливаем глобальную переменную для отладки
+                $GLOBALS['debug_chat_id'] = $chat_id;
+                
                 GPT::InitUserData(Events::GetParam('name'), Events::GetParam('about'));
-                $response = GPT::GetMessage($transcription, $history);
+                $response = GPT::GetMessage($transcription, $history, $chat_id);
                 
                 // Добавляем сообщения в историю
                 $history = GPT::AddToHistory('user', $transcription, $history);
@@ -83,7 +86,6 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
                 // Debug: если была вызвана функция, логируем это
                 if ($response['has_function_call']) {
                     sendMessage($chat_id, "🔧 Функция была выполнена успешно!");
-                    error_log('index.php - Voice function was executed successfully for chat_id: ' . $chat_id);
                 }
                 return;
             } catch (Exception $e) {
@@ -217,8 +219,11 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
             // Получаем историю сообщений - ИСПРАВЛЕНО: убрано self::
             $history = getMessageHistory();
             
+            // Устанавливаем глобальную переменную для отладки
+            $GLOBALS['debug_chat_id'] = $chat_id;
+            
             GPT::InitUserData(Events::GetParam('name'), Events::GetParam('about'));
-            $response = GPT::GetMessage($text, $history);
+            $response = GPT::GetMessage($text, $history, $chat_id);
             
             // Добавляем сообщения в историю
             $history = GPT::AddToHistory('user', $text, $history);
@@ -233,7 +238,6 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
             // Debug: если была вызвана функция, логируем это
             if ($response['has_function_call']) {
                 sendMessage($chat_id, "🔧 Функция была выполнена успешно!");
-                error_log('index.php - Function was executed successfully for chat_id: ' . $chat_id);
             }
             
         } catch (Exception $e) {
