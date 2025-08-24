@@ -11,7 +11,12 @@ require_once 'Core/Events.php';
 
 // Функция для логирования ошибок
 function logError($message) {
-    error_log(date('Y-m-d H:i:s') . ' - ' . $message . PHP_EOL, 3, 'error.log');
+    $file = '/tg_errors.log';
+    // Логируем выполнение
+    file_put_contents($file, 
+        date('Y-m-d H:i:s') . " - " . $message . "\n", 
+        FILE_APPEND
+    );
 }
 
 $content = file_get_contents("php://input");
@@ -63,17 +68,25 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
                 // Получаем историю сообщений - ИСПРАВЛЕНО: убрано self::
                 $history = getMessageHistory();
                 
+                // Устанавливаем глобальную переменную для отладки
+                $GLOBALS['debug_chat_id'] = $chat_id;
+                
                 GPT::InitUserData(Events::GetParam('name'), Events::GetParam('about'));
-                $response = GPT::GetMessage($transcription, $history);
+                $response = GPT::GetMessage($transcription, $history, $chat_id);
                 
                 // Добавляем сообщения в историю
                 $history = GPT::AddToHistory('user', $transcription, $history);
-                $history = GPT::AddToHistory('assistant', $response, $history);
+                $history = GPT::AddToHistory('assistant', $response['content'], $history);
                 
                 // Сохраняем обновленную историю
                 saveMessageHistory($history);
                 
-                sendMessage($chat_id, $response);
+                sendMessage($chat_id, $response['content']);
+                
+                // Debug: если была вызвана функция, логируем это
+                if ($response['has_function_call']) {
+                    //sendMessage($chat_id, "🔧 Функция была выполнена успешно!");
+                }
                 return;
             } catch (Exception $e) {
                 logError('Voice transcription error: ' . $e->getMessage());
@@ -206,17 +219,26 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
             // Получаем историю сообщений - ИСПРАВЛЕНО: убрано self::
             $history = getMessageHistory();
             
+            // Устанавливаем глобальную переменную для отладки
+            $GLOBALS['debug_chat_id'] = $chat_id;
+            
             GPT::InitUserData(Events::GetParam('name'), Events::GetParam('about'));
-            $response = GPT::GetMessage($text, $history);
+            $response = GPT::GetMessage($text, $history, $chat_id);
             
             // Добавляем сообщения в историю
             $history = GPT::AddToHistory('user', $text, $history);
-            $history = GPT::AddToHistory('assistant', $response, $history);
+            $history = GPT::AddToHistory('assistant', $response['content'], $history);
             
             // Сохраняем обновленную историю - ИСПРАВЛЕНО: убрано self::
             saveMessageHistory($history);
             
-            sendMessage($chat_id, $response);
+            // Отправляем ответ пользователю
+            sendMessage($chat_id, $response['content']);
+            
+            // Debug: если была вызвана функция, логируем это
+            if ($response['has_function_call']) {
+                //sendMessage($chat_id, "🔧 Функция была выполнена успешно!");
+            }
             
         } catch (Exception $e) {
             logError('GPT processing error: ' . $e->getMessage());
