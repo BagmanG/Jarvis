@@ -11,12 +11,12 @@ require_once 'Core/Events.php';
 
 // Функция для логирования ошибок
 function logError($message) {
-    $file = __DIR__ . '/tg_errors.log';
-// Логируем выполнение
-file_put_contents($file, 
-    date('Y-m-d H:i:s') . " - " . $message . "\n", 
-    FILE_APPEND
-);
+    $file = '/tg_errors.log';
+    // Логируем выполнение
+    file_put_contents($file, 
+        date('Y-m-d H:i:s') . " - " . $message . "\n", 
+        FILE_APPEND
+    );
 }
 
 $content = file_get_contents("php://input");
