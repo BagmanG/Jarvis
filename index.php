@@ -134,9 +134,6 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
         $help_text = Vars::getUserId()."/".Vars::getChatId();
         sendMessage($chat_id, $help_text);
     }
-    elseif (strpos($text, "/testVoice") === 0) {
-        sendMessage($chat_id, "test voice");
-    }
     elseif (strpos($text, "/support") === 0) {
     // Устанавливаем состояние, что пользователь обратился в поддержку
     Events::SetState("support_requested");
@@ -169,9 +166,7 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
             sendMessage($chat_id, "❌ Произошла ошибка при очистке истории. Попробуйте позже.");
         }
     }
-    elseif (stripos($text, "скажи") !== false) {
-        sendMessage($chat_id, "не скажу");
-    } else {
+    else {
         $state = Events::GetState();
         if($state == "start"){
             Events::SetState("aboutMe");
