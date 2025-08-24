@@ -89,6 +89,8 @@ class GPT {
             $toolCalls = $responseData['choices'][0]['message']['tool_calls'];
             $functionResults = [];
             
+            error_log('GPT::GetMessage - Function calls detected: ' . json_encode($toolCalls));
+            
             foreach ($toolCalls as $toolCall) {
                 if (isset($toolCall['function'])) {
                     $functionName = $toolCall['function']['name'];
@@ -97,8 +99,12 @@ class GPT {
                     // Получаем user_id из текущего контекста
                     $userId = self::getCurrentUserId();
                     
+                    error_log('GPT::GetMessage - Calling function: ' . $functionName . ' with userId: ' . $userId);
+                    
                     // Вызываем функцию
                     $result = TaskHandler::handleFunctionCall($functionName, $arguments, $userId);
+                    error_log('GPT::GetMessage - Function result: ' . json_encode($result));
+                    
                     $functionResults[] = [
                         'tool_call_id' => $toolCall['id'],
                         'role' => 'tool',
@@ -146,9 +152,17 @@ class GPT {
     private static function getCurrentUserId(): int {
         // Пытаемся получить из Vars, если доступен
         if (class_exists('Vars')) {
-            return Vars::getUserId() ?? 0;
+            $userId = Vars::getUserId();
+            if ($userId && $userId > 0) {
+                return $userId;
+            }
         }
-        return 0;
+        
+        // Если не удалось получить user_id, логируем ошибку
+        error_log('Warning: Could not get user_id from Vars class. User ID: ' . (Vars::getUserId() ?? 'null'));
+        
+        // Возвращаем 1 как fallback для тестирования
+        return 1;
     }
 
     // Функция для добавления сообщения в историю

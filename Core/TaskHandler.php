@@ -83,6 +83,9 @@ class TaskHandler {
     
     // Обработка вызова функции от ChatGPT
     public static function handleFunctionCall($functionName, $arguments, $userId): array {
+        // Логируем вызов функции для отладки
+        error_log('TaskHandler::handleFunctionCall - Function: ' . $functionName . ', Arguments: ' . json_encode($arguments) . ', UserId: ' . $userId);
+        
         switch ($functionName) {
             case 'add_task':
                 return self::addTask($arguments, $userId);
@@ -91,6 +94,7 @@ class TaskHandler {
             case 'list_tasks':
                 return self::listTasks($arguments, $userId);
             default:
+                error_log('TaskHandler::handleFunctionCall - Unknown function: ' . $functionName);
                 return [
                     'success' => false,
                     'message' => 'Неизвестная функция: ' . $functionName
@@ -101,6 +105,9 @@ class TaskHandler {
     // Добавление задачи
     private static function addTask($args, $userId): array {
         try {
+            // Логируем входящие параметры для отладки
+            error_log('TaskHandler::addTask called with args: ' . json_encode($args) . ', userId: ' . $userId);
+            
             $title = $args['title'] ?? '';
             $description = $args['description'] ?? '';
             $dueDate = self::parseDate($args['due_date'] ?? 'today');
@@ -307,12 +314,17 @@ class TaskHandler {
         $pass = DB_PASSWORD;
         $db = DB_NAME;
         
+        // Логируем параметры подключения для отладки
+        error_log('TaskHandler::getConnection - Host: ' . $host . ', User: ' . $user . ', DB: ' . $db);
+        
         $mysqli = new mysqli($host, $user, $pass, $db);
         
         if ($mysqli->connect_error) {
+            error_log('TaskHandler::getConnection error: ' . $mysqli->connect_error);
             throw new Exception("Ошибка подключения к базе данных: " . $mysqli->connect_error);
         }
         
+        error_log('TaskHandler::getConnection successful');
         return $mysqli;
     }
 }

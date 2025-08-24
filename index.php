@@ -78,6 +78,7 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
                 // Debug: если была вызвана функция, логируем это
                 if ($response['has_function_call']) {
                     sendMessage($chat_id, "🔧 Функция была выполнена успешно!");
+                    error_log('index.php - Voice function was executed successfully for chat_id: ' . $chat_id);
                 }
                 return;
             } catch (Exception $e) {
@@ -227,6 +228,7 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
             // Debug: если была вызвана функция, логируем это
             if ($response['has_function_call']) {
                 sendMessage($chat_id, "🔧 Функция была выполнена успешно!");
+                error_log('index.php - Function was executed successfully for chat_id: ' . $chat_id);
             }
             
         } catch (Exception $e) {
