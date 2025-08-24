@@ -327,4 +327,12 @@ class TaskHandler {
         error_log('TaskHandler::getConnection successful');
         return $mysqli;
     }
+
+    try{}
+        $mysqli = getConnection();
+        $mysqli->close();
+        echo "ok";
+    } catch (Exception $e) {
+        echo $e->getMessage();
+    }
 }
