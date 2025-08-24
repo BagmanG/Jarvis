@@ -329,12 +329,12 @@ class TaskHandler {
         error_log('TaskHandler::getConnection successful');
         return $mysqli;
     }
+}
 
-    try{}
-        $mysqli = getConnection();
-        $mysqli->close();
-        echo "ok";
-    } catch (Exception $e) {
-        echo $e->getMessage();
-    }
+try {
+    $mysqli = TaskHandler::getConnection();
+    $mysqli->close();
+    echo "✅ Соединение с базой данных успешно установлено";
+} catch (Exception $e) {
+    echo "❌ Ошибка соединения: " . $e->getMessage();
 }
