@@ -142,15 +142,12 @@ class TaskHandler {
             $createdDate = date('Y-m-d H:i:s');
             
             $sql = "INSERT INTO `Tasks` (`id`, `user_id`, `title`, `description`, `due_date`, `due_time`, `priority`, `reminder`, `status`, `created_at`, `updated_at`, `reminder_sent`) VALUES
-(0, ?, ?, ?, ?, ?, ?, '5min', 'pending', ?, ?, 0)";
+    (0, $userId, '$title', '$description', '$dueDate', '$dueTime', '$priority', '5min', 'pending', '$createdDate', '$createdDate', 0)";
             
             $mysqli = self::getConnection();
-            $stmt = $mysqli->prepare($sql);
-            $stmt->bind_param('issssss', $userId, $title, $description, $dueDate, $dueTime, $priority, $createdDate, $createdDate);
             
-            if ($stmt->execute()) {
+            if ($mysqli->query($sql)) {
                 $taskId = $mysqli->insert_id;
-                $stmt->close();
                 $mysqli->close();
                 
                 return [
@@ -166,11 +163,10 @@ class TaskHandler {
                     ]
                 ];
             } else {
-                $stmt->close();
                 $mysqli->close();
                 return [
                     'success' => false,
-                    'message' => 'Ошибка при добавлении задачи в базу данных'
+                    'message' => 'Ошибка при добавлении задачи в базу данных: ' . $mysqli->error
                 ];
             }
             
