@@ -115,7 +115,7 @@ class TaskHandler {
         try {
             // Отправляем отладочную информацию в Telegram
             if (function_exists('sendMessage') && isset($GLOBALS['debug_chat_id'])) {
-                sendMessage($GLOBALS['debug_chat_id'], "🔧 TaskHandler::addTask вызван с аргументами: " . json_encode($args) . ", userId: $userId");
+                //sendMessage($GLOBALS['debug_chat_id'], "🔧 TaskHandler::addTask вызван с аргументами: " . json_encode($args) . ", userId: $userId");
             }
             
             $title = $args['title'] ?? '';
