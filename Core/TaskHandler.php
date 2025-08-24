@@ -87,7 +87,8 @@ class TaskHandler {
     public static function handleFunctionCall($functionName, $arguments, $userId): array {
         // Отправляем отладочную информацию в Telegram
         if (function_exists('sendMessage') && isset($GLOBALS['debug_chat_id'])) {
-            sendMessage($GLOBALS['debug_chat_id'], "🔧 TaskHandler::handleFunctionCall - Функция: $functionName, Аргументы: " . json_encode($arguments) . ", UserId: $userId");
+            ///DEBUG
+            //sendMessage($GLOBALS['debug_chat_id'], "🔧 TaskHandler::handleFunctionCall - Функция: $functionName, Аргументы: " . json_encode($arguments) . ", UserId: $userId");
         }
         
         switch ($functionName) {
@@ -99,7 +100,8 @@ class TaskHandler {
                 return self::listTasks($arguments, $userId);
             default:
                 if (function_exists('sendMessage') && isset($GLOBALS['debug_chat_id'])) {
-                    sendMessage($GLOBALS['debug_chat_id'], "❌ TaskHandler::handleFunctionCall - Неизвестная функция: $functionName");
+                    ///DEBUG
+                    //sendMessage($GLOBALS['debug_chat_id'], "❌ TaskHandler::handleFunctionCall - Неизвестная функция: $functionName");
                 }
                 return [
                     'success' => false,
@@ -320,20 +322,20 @@ class TaskHandler {
         
         // Отправляем параметры подключения в Telegram
         if (function_exists('sendMessage') && isset($GLOBALS['debug_chat_id'])) {
-            sendMessage($GLOBALS['debug_chat_id'], "🔌 TaskHandler::getConnection - Host: $host, User: $user, DB: $db");
+            //sendMessage($GLOBALS['debug_chat_id'], "🔌 TaskHandler::getConnection - Host: $host, User: $user, DB: $db");
         }
         
         $mysqli = new mysqli($host, $user, $pass, $db);
         
         if ($mysqli->connect_error) {
             if (function_exists('sendMessage') && isset($GLOBALS['debug_chat_id'])) {
-                sendMessage($GLOBALS['debug_chat_id'], "❌ TaskHandler::getConnection ошибка: " . $mysqli->connect_error);
+                //sendMessage($GLOBALS['debug_chat_id'], "❌ TaskHandler::getConnection ошибка: " . $mysqli->connect_error);
             }
             throw new Exception("Ошибка подключения к базе данных: " . $mysqli->connect_error);
         }
         
         if (function_exists('sendMessage') && isset($GLOBALS['debug_chat_id'])) {
-            sendMessage($GLOBALS['debug_chat_id'], "✅ TaskHandler::getConnection успешно");
+            //sendMessage($GLOBALS['debug_chat_id'], "✅ TaskHandler::getConnection успешно");
         }
         return $mysqli;
     }

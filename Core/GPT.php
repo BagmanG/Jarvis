@@ -91,7 +91,8 @@ class GPT {
             
             // Отправляем отладочную информацию в Telegram
             if (function_exists('sendMessage') && isset($chat_id)) {
-                sendMessage($chat_id, "🔍 Обнаружены вызовы функций: " . json_encode($toolCalls));
+                ///DEBUG
+                //sendMessage($chat_id, "🔍 Обнаружены вызовы функций: " . json_encode($toolCalls));
             }
             
             foreach ($toolCalls as $toolCall) {
@@ -104,7 +105,8 @@ class GPT {
                     
                     // Отправляем отладочную информацию в Telegram
                     if (function_exists('sendMessage') && $chat_id) {
-                        sendMessage($chat_id, "🔧 Вызываю функцию: $functionName с userId: $userId");
+                        ///DEBUG
+                        //sendMessage($chat_id, "🔧 Вызываю функцию: $functionName с userId: $userId");
                     }
                     
                     // Вызываем функцию
@@ -112,7 +114,7 @@ class GPT {
                     
                     // Отправляем результат в Telegram
                     if (function_exists('sendMessage') && $chat_id) {
-                        sendMessage($chat_id, "📊 Результат функции: " . json_encode($result));
+                        //sendMessage($chat_id, "📊 Результат функции: " . json_encode($result));
                     }
                     
                     $functionResults[] = [
