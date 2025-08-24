@@ -85,7 +85,7 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
                 
                 // Debug: если была вызвана функция, логируем это
                 if ($response['has_function_call']) {
-                    sendMessage($chat_id, "🔧 Функция была выполнена успешно!");
+                    //sendMessage($chat_id, "🔧 Функция была выполнена успешно!");
                 }
                 return;
             } catch (Exception $e) {
@@ -237,7 +237,7 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
             
             // Debug: если была вызвана функция, логируем это
             if ($response['has_function_call']) {
-                sendMessage($chat_id, "🔧 Функция была выполнена успешно!");
+                //sendMessage($chat_id, "🔧 Функция была выполнена успешно!");
             }
             
         } catch (Exception $e) {
