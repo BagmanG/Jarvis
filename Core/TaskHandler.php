@@ -330,11 +330,3 @@ class TaskHandler {
         return $mysqli;
     }
 }
-
-try {
-    $mysqli = TaskHandler::getConnection();
-    $mysqli->close();
-    echo "✅ Соединение с базой данных успешно установлено";
-} catch (Exception $e) {
-    echo "❌ Ошибка соединения: " . $e->getMessage();
-}
