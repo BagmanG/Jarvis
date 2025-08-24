@@ -14,7 +14,7 @@ if(isset($_GET['name'])){
     $user_id = $_GET['user_id'] ?? 0;
     $createdDate = date('Y-m-d H:i:s');
     $sql = "INSERT INTO `Tasks` (`id`, `user_id`, `title`, `description`, `due_date`, `due_time`, `priority`, `reminder`, `status`, `created_at`, `updated_at`, `reminder_sent`) VALUES
-(0, $user_id, '$taskName', '', '$$taskDate', '$$taskTime', 'medium', '5min', 'pending', '$createdDate', '$createdDate', 0);";
+(0, $user_id, '$taskName', '', '$taskDate', '$taskTime', 'medium', '5min', 'pending', '$createdDate', '$createdDate', 0);";
 query($sql);
 }
 
