@@ -9,6 +9,7 @@ require_once 'Core/Images.php';
 require_once 'Core/Vars.php';
 require_once 'Core/Events.php';
 require_once 'Core/ImageProcessor.php';
+require_once 'Core/ImageGenerator.php';
 
 // Функция для логирования ошибок
 function logError($message) {
@@ -30,6 +31,7 @@ if (!$update) {
 
 try {
     GPT::Init(AI_TOKEN);
+    ImageGenerator::Init(AI_TOKEN);
     Events::Init(DB_PASSWORD, DB_NAME);
 } catch (Exception $e) {
     logError('Initialization error: ' . $e->getMessage());
@@ -291,12 +293,19 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
         $help_text .= "/start - начать работу\n";
         $help_text .= "/help - получить помощь\n";
         $help_text .= "/clear - очистить историю диалога\n";
+        $help_text .= "/image_sizes - доступные размеры изображений\n";
         $help_text .= "/support - обратиться в поддержку\n\n";
         $help_text .= "🖼 Работа с изображениями:\n";
+        $help_text .= "📷 Анализ изображений:\n";
         $help_text .= "• Отправьте изображение без текста - получите подробное описание\n";
         $help_text .= "• Отправьте изображение с текстом - зададите вопрос по изображению\n";
         $help_text .= "• Поддерживаются форматы: JPEG, PNG, GIF, WebP, BMP\n";
         $help_text .= "• Максимальный размер: 20 МБ\n\n";
+        $help_text .= "🎨 Генерация изображений:\n";
+        $help_text .= "• 'Нарисуй кота в космосе' - создаю изображение по описанию\n";
+        $help_text .= "• 'Создай картинку с закатом' - генерирую по вашему запросу\n";
+        $help_text .= "• 'Покажи как выглядит робот' - визуализирую описание\n";
+        $help_text .= "• Доступные размеры: квадрат, горизонтальный, вертикальный\n\n";
         $help_text .= "🎯 Управление задачами:\n";
         $help_text .= "• Просто скажите 'добавь задачу' или 'покажи задачи'\n";
         $help_text .= "• Используйте естественный язык для работы с планами\n\n";
@@ -342,6 +351,17 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
             sendMessage($chat_id, "❌ Произошла ошибка при очистке истории. Попробуйте позже.");
         }
     }
+    elseif (strpos($text, "/image_sizes") === 0) {
+        $sizes_text = "🖼️ Доступные размеры изображений:\n\n";
+        $sizes = ImageGenerator::getAvailableSizes();
+        foreach ($sizes as $size => $description) {
+            $sizes_text .= "• $size - $description\n";
+        }
+        $sizes_text .= "\n💡 По умолчанию используется квадратный формат 1024x1024\n";
+        $sizes_text .= "Для генерации просто напишите: 'Нарисуй кота в космосе'";
+        
+        sendMessage($chat_id, $sizes_text);
+    }
     else {
         $state = Events::GetState();
         if($state == "start"){
@@ -375,6 +395,55 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
         }
         return;
     }
+        
+        // Проверяем, является ли это запросом на генерацию изображения
+        if (ImageGenerator::isImageGenerationRequest($text)) {
+            sendMessage($chat_id, "🎨 Создаю изображение...");
+            
+            try {
+                // Извлекаем промпт для генерации
+                $prompt = ImageGenerator::extractPromptFromText($text);
+                
+                if (empty($prompt)) {
+                    sendMessage($chat_id, "❌ Пожалуйста, укажите, что именно нарисовать. Например: 'Нарисуй кота в космосе'");
+                    return;
+                }
+                
+                // Улучшаем промпт
+                $enhanced_prompt = ImageGenerator::enhancePrompt($prompt);
+                
+                // Генерируем изображение
+                $result = ImageGenerator::generateImage($enhanced_prompt);
+                
+                if ($result['success'] && !empty($result['images'])) {
+                    $image_url = $result['images'][0]['url'];
+                    
+                    // Формируем сообщение с результатом
+                    $caption = "🎨 Вот что у меня получилось!\n\n";
+                    $caption .= "📝 Ваш запрос: " . $text . "\n";
+                    if (isset($result['revised_prompt']) && $result['revised_prompt'] !== $prompt) {
+                        $caption .= "🔄 Улучшенное описание: " . $result['revised_prompt'];
+                    }
+                    
+                    // Отправляем изображение
+                    sendPhoto($chat_id, $image_url, $caption);
+                    
+                    // Добавляем в историю
+                    $history = getMessageHistory();
+                    $history = GPT::AddToHistory('user', $text, $history);
+                    $history = GPT::AddToHistory('assistant', "Создал изображение: " . $prompt, $history);
+                    saveMessageHistory($history);
+                    
+                } else {
+                    sendMessage($chat_id, "❌ Не удалось создать изображение. Попробуйте изменить описание.");
+                }
+                
+            } catch (Exception $e) {
+                logError('Image generation error: ' . $e->getMessage());
+                sendMessage($chat_id, "❌ Ошибка при создании изображения: " . $e->getMessage());
+            }
+            return;
+        }
         
         sendMessage($chat_id, "Думаю...");
         
