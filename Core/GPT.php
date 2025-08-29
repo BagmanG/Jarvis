@@ -3,7 +3,7 @@
 class GPT {
     public static $api_key = "";
     private static $api_url = 'https://api.aitunnel.ru/v1/chat/completions';
-    private static $model = 'gpt-4.1-mini';
+    private static $model = 'gpt-4o-mini'; // Обновляем модель для поддержки изображений
     private static $max_tokens = 5000;
     private static $system_prompt = 'Ты — Джарвис, искуственный интеллект, созданный для помощи в достижении целей. Ты отвечаешь вежливо, лаконично и по делу. 
 
@@ -15,6 +15,12 @@ class GPT {
 - Если не указано время - используй 12:00 по умолчанию
 - Если не указан приоритет - используй "medium" по умолчанию
 
+Ты также можешь анализировать изображения. Когда пользователь отправляет изображение:
+- Если к изображению есть текст/вопрос - отвечай на вопрос, анализируя изображение
+- Если изображение без текста - дай подробное описание того, что видишь
+- Можешь распознавать текст на изображениях, объекты, людей, сцены
+- Если на изображении есть задачи или планы - можешь предложить добавить их в систему задач
+
 Всегда будь дружелюбным и подтверждай выполнение действий.';
 
     public static function Init(string $key){
@@ -22,10 +28,16 @@ class GPT {
     }
 
     public static function InitUserData(string $name, string $about){
-        self::$system_prompt = "Ты — Джарвис, искуственный интеллект, созданный для помощи в достижении целей. Ты отвечаешь вежливо, лаконично и по делу. Ты всегда отвечаешь без форматирования, только текст! Пользователя зовут '$name' поэтому всегда обращайся к нему по имени. Вот информация о пользователе: $about";
+        self::$system_prompt = "Ты — Джарвис, искуственный интеллект, созданный для помощи в достижении целей. Ты отвечаешь вежливо, лаконично и по делу. Ты всегда отвечаешь без форматирования, только текст! Пользователя зовут '$name' поэтому всегда обращайся к нему по имени. Вот информация о пользователе: $about
+
+Ты можешь анализировать изображения:
+- Если к изображению есть текст/вопрос - отвечай на вопрос, анализируя изображение
+- Если изображение без текста - дай подробное описание того, что видишь
+- Можешь распознавать текст на изображениях, объекты, людей, сцены
+- Если на изображении есть задачи или планы - можешь предложить добавить их в систему задач";
     }
 
-    public static function GetMessage(string $userMessage, array $history = [], int $chat_id = null): array {
+    public static function GetMessage(string $userMessage, array $history = [], int $chat_id = null, array $images = []): array {
         // Проверка, что API ключ установлен
         if (empty(self::$api_key)) {
             throw new Exception('API key is not set. Please call GPT::Init() first.');
@@ -46,10 +58,34 @@ class GPT {
             }
         }
 
+        // Формируем контент сообщения пользователя
+        $userContent = [];
+        
+        // Добавляем текст, если есть
+        if (!empty($userMessage)) {
+            $userContent[] = [
+                'type' => 'text',
+                'text' => $userMessage
+            ];
+        }
+        
+        // Добавляем изображения, если есть
+        if (!empty($images)) {
+            foreach ($images as $image) {
+                $userContent[] = [
+                    'type' => 'image_url',
+                    'image_url' => [
+                        'url' => $image['url'],
+                        'detail' => 'high' // Можно изменить на 'low' для экономии токенов
+                    ]
+                ];
+            }
+        }
+        
         // Добавляем текущее сообщение пользователя
         $messages[] = [
             'role' => 'user',
-            'content' => $userMessage
+            'content' => $userContent
         ];
 
         // Подключаем TaskHandler для получения доступных функций
@@ -74,14 +110,27 @@ class GPT {
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data_chat));
 
         $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curl_error = curl_error($ch);
         curl_close($ch);
+
+        // Проверяем ошибки cURL
+        if ($curl_error) {
+            throw new Exception('cURL error: ' . $curl_error);
+        }
 
         // Декодируем JSON ответ
         $responseData = json_decode($response, true);
         
         // Проверяем на ошибки декодирования
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception('Failed to decode JSON response');
+            throw new Exception('Failed to decode JSON response: ' . $response);
+        }
+        
+        // Проверяем HTTP код ответа
+        if ($http_code !== 200) {
+            $error_message = isset($responseData['error']['message']) ? $responseData['error']['message'] : 'Unknown API error';
+            throw new Exception('API error (HTTP ' . $http_code . '): ' . $error_message);
         }
         
         // Проверяем, есть ли вызов функции
@@ -154,6 +203,97 @@ class GPT {
             return [
                 'content' => $responseData['choices'][0]['message']['content'],
                 'has_function_call' => isset($responseData['choices'][0]['message']['tool_calls'])
+            ];
+        }
+        
+        throw new Exception('Invalid response structure');
+    }
+
+    // Новый метод для обработки только изображений
+    public static function AnalyzeImage(string $imageUrl, string $prompt = "", int $chat_id = null): array {
+        // Проверка, что API ключ установлен
+        if (empty(self::$api_key)) {
+            throw new Exception('API key is not set. Please call GPT::Init() first.');
+        }
+
+        // Формируем массив сообщений
+        $messages = [
+            [
+                'role' => 'system',
+                'content' => self::$system_prompt
+            ]
+        ];
+
+        // Формируем контент сообщения пользователя
+        $userContent = [];
+        
+        // Добавляем текст, если есть
+        if (!empty($prompt)) {
+            $userContent[] = [
+                'type' => 'text',
+                'text' => $prompt
+            ];
+        }
+        
+        // Добавляем изображение
+        $userContent[] = [
+            'type' => 'image_url',
+            'image_url' => [
+                'url' => $imageUrl,
+                'detail' => 'high'
+            ]
+        ];
+        
+        // Добавляем текущее сообщение пользователя
+        $messages[] = [
+            'role' => 'user',
+            'content' => $userContent
+        ];
+
+        $data_chat = [
+            'model' => self::$model,
+            'max_tokens' => self::$max_tokens,
+            'messages' => $messages
+        ];
+
+        $ch = curl_init(self::$api_url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . self::$api_key
+        ]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data_chat));
+
+        $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curl_error = curl_error($ch);
+        curl_close($ch);
+
+        // Проверяем ошибки cURL
+        if ($curl_error) {
+            throw new Exception('cURL error: ' . $curl_error);
+        }
+
+        // Декодируем JSON ответ
+        $responseData = json_decode($response, true);
+        
+        // Проверяем на ошибки декодирования
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception('Failed to decode JSON response: ' . $response);
+        }
+        
+        // Проверяем HTTP код ответа
+        if ($http_code !== 200) {
+            $error_message = isset($responseData['error']['message']) ? $responseData['error']['message'] : 'Unknown API error';
+            throw new Exception('API error (HTTP ' . $http_code . '): ' . $error_message);
+        }
+        
+        // Извлекаем content из ответа
+        if (isset($responseData['choices'][0]['message']['content'])) {
+            return [
+                'content' => $responseData['choices'][0]['message']['content'],
+                'has_function_call' => false
             ];
         }
         

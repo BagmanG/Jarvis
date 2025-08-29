@@ -8,6 +8,7 @@ require_once 'Core/GPT.php';
 require_once 'Core/Images.php';
 require_once 'Core/Vars.php';
 require_once 'Core/Events.php';
+require_once 'Core/ImageProcessor.php';
 
 // Функция для логирования ошибок
 function logError($message) {
@@ -99,6 +100,151 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
             sendMessage($chat_id, "Не удалось получить голосовое сообщение.");
         }
     }
+    
+    // Обработка изображений
+    if (isset($message["photo"])) {
+        $photos = $message["photo"];
+        $text = isset($message["caption"]) ? $message["caption"] : "";
+        
+        // Берем последнее (самое большое) изображение из массива
+        $photo = end($photos);
+        $file_id = $photo["file_id"];
+        
+        // Получаем URL изображения
+        $image_url = ImageProcessor::getImageUrlFromTelegram($file_id, BOT_TOKEN);
+        
+        if ($image_url) {
+            // Валидируем изображение
+            $validation = ImageProcessor::validateImage($image_url, BOT_TOKEN);
+            
+            if (!$validation['valid']) {
+                sendMessage($chat_id, $validation['error']);
+                return;
+            }
+            
+            sendMessage($chat_id, "Анализирую изображение...");
+            
+            try {
+                // Получаем историю сообщений
+                $history = getMessageHistory();
+                
+                // Устанавливаем глобальную переменную для отладки
+                $GLOBALS['debug_chat_id'] = $chat_id;
+                
+                GPT::InitUserData(Events::GetParam('name'), Events::GetParam('about'));
+                
+                // Если есть текст с изображением, используем GetMessage с изображениями
+                if (!empty($text)) {
+                    $images = [
+                        [
+                            'url' => $image_url
+                        ]
+                    ];
+                    
+                    $response = GPT::GetMessage($text, $history, $chat_id, $images);
+                } else {
+                    // Если только изображение, используем AnalyzeImage
+                    $response = GPT::AnalyzeImage($image_url, "Опиши это изображение подробно. Если видишь текст, распознай его. Если это задачи или планы, перечисли их.", $chat_id);
+                }
+                
+                // Добавляем сообщения в историю
+                $userMessage = !empty($text) ? $text : "[Изображение]";
+                $history = GPT::AddToHistory('user', $userMessage, $history);
+                $history = GPT::AddToHistory('assistant', $response['content'], $history);
+                
+                // Сохраняем обновленную историю
+                saveMessageHistory($history);
+                
+                sendMessage($chat_id, $response['content']);
+                
+                // Debug: если была вызвана функция, логируем это
+                if ($response['has_function_call']) {
+                    //sendMessage($chat_id, "🔧 Функция была выполнена успешно!");
+                }
+                return;
+            } catch (Exception $e) {
+                logError('Image analysis error: ' . $e->getMessage());
+                sendMessage($chat_id, "Ошибка при анализе изображения: " . $e->getMessage());
+            }
+        } else {
+            sendMessage($chat_id, "Не удалось получить изображение.");
+        }
+    }
+    
+    // Обработка документов (файлов) - могут содержать изображения
+    if (isset($message["document"])) {
+        $document = $message["document"];
+        $text = isset($message["caption"]) ? $message["caption"] : "";
+        $mime_type = $document["mime_type"] ?? "";
+        
+        // Проверяем, является ли документ изображением
+        if (ImageProcessor::isValidImage($mime_type)) {
+            $file_id = $document["file_id"];
+            
+            // Получаем URL изображения
+            $image_url = ImageProcessor::getImageUrlFromTelegram($file_id, BOT_TOKEN);
+            
+            if ($image_url) {
+                // Валидируем изображение
+                $validation = ImageProcessor::validateImage($image_url, BOT_TOKEN);
+                
+                if (!$validation['valid']) {
+                    sendMessage($chat_id, $validation['error']);
+                    return;
+                }
+                
+                sendMessage($chat_id, "Анализирую изображение из документа...");
+                
+                try {
+                    // Получаем историю сообщений
+                    $history = getMessageHistory();
+                    
+                    // Устанавливаем глобальную переменную для отладки
+                    $GLOBALS['debug_chat_id'] = $chat_id;
+                    
+                    GPT::InitUserData(Events::GetParam('name'), Events::GetParam('about'));
+                    
+                    // Если есть текст с изображением, используем GetMessage с изображениями
+                    if (!empty($text)) {
+                        $images = [
+                            [
+                                'url' => $image_url
+                            ]
+                        ];
+                        
+                        $response = GPT::GetMessage($text, $history, $chat_id, $images);
+                    } else {
+                        // Если только изображение, используем AnalyzeImage
+                        $response = GPT::AnalyzeImage($image_url, "Опиши это изображение подробно. Если видишь текст, распознай его. Если это задачи или планы, перечисли их.", $chat_id);
+                    }
+                    
+                    // Добавляем сообщения в историю
+                    $userMessage = !empty($text) ? $text : "[Изображение из документа]";
+                    $history = GPT::AddToHistory('user', $userMessage, $history);
+                    $history = GPT::AddToHistory('assistant', $response['content'], $history);
+                    
+                    // Сохраняем обновленную историю
+                    saveMessageHistory($history);
+                    
+                    sendMessage($chat_id, $response['content']);
+                    
+                    // Debug: если была вызвана функция, логируем это
+                    if ($response['has_function_call']) {
+                        //sendMessage($chat_id, "🔧 Функция была выполнена успешно!");
+                    }
+                    return;
+                } catch (Exception $e) {
+                    logError('Document image analysis error: ' . $e->getMessage());
+                    sendMessage($chat_id, "Ошибка при анализе изображения из документа: " . $e->getMessage());
+                }
+            } else {
+                sendMessage($chat_id, "Не удалось получить изображение из документа.");
+            }
+        } else {
+            // Если это не изображение, отправляем сообщение о том, что поддерживаются только изображения
+            sendMessage($chat_id, "Я поддерживаю анализ изображений. Пожалуйста, отправьте изображение или файл с изображением.");
+        }
+    }
     // Обработка команд
     elseif (strpos($text, "/start") === 0) {
         $photo_url = Images::$start;
@@ -140,7 +286,24 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
         file_get_contents($url, false, $context);
     }
     elseif (strpos($text, "/help") === 0) {
-        $help_text = "Это справочное сообщение.\nДоступные команды:\n/start - начать работу\n/help - получить помощь\n/clear - очистить историю диалога";
+        $help_text = "🤖 Джарвис - ваш персональный ИИ-помощник\n\n";
+        $help_text .= "📋 Доступные команды:\n";
+        $help_text .= "/start - начать работу\n";
+        $help_text .= "/help - получить помощь\n";
+        $help_text .= "/clear - очистить историю диалога\n";
+        $help_text .= "/support - обратиться в поддержку\n\n";
+        $help_text .= "🖼 Работа с изображениями:\n";
+        $help_text .= "• Отправьте изображение без текста - получите подробное описание\n";
+        $help_text .= "• Отправьте изображение с текстом - зададите вопрос по изображению\n";
+        $help_text .= "• Поддерживаются форматы: JPEG, PNG, GIF, WebP, BMP\n";
+        $help_text .= "• Максимальный размер: 20 МБ\n\n";
+        $help_text .= "🎯 Управление задачами:\n";
+        $help_text .= "• Просто скажите 'добавь задачу' или 'покажи задачи'\n";
+        $help_text .= "• Используйте естественный язык для работы с планами\n\n";
+        $help_text .= "🎙 Голосовые сообщения:\n";
+        $help_text .= "• Отправляйте голосовые сообщения - я их распознаю и отвечу\n\n";
+        $help_text .= "Просто пишите или говорите со мной как с обычным собеседником!";
+        
         sendMessage($chat_id, $help_text);
     } 
     elseif (strpos($text, "/test") === 0) {
