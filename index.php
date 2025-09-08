@@ -220,7 +220,7 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
                         $response = GPT::AnalyzeImage($image_url, "Опиши это изображение подробно. Если видишь текст, распознай его. Если это задачи или планы, перечисли их.", $chat_id);
                     }
                     
-                    // Добавляем сообщения в историю
+                    // Добавляем сообщения в историю...
                     $userMessage = !empty($text) ? $text : "[Изображение из документа]";
                     $history = GPT::AddToHistory('user', $userMessage, $history);
                     $history = GPT::AddToHistory('assistant', $response['content'], $history);
