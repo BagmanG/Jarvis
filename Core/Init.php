@@ -1,7 +1,9 @@
-<?
+<?php
 require_once 'EnvReader.php';
 
-EnvReader::load();
+// Абсолютный путь к .env
+$envPath = __DIR__ . '/../.env';
+EnvReader::load($envPath);
 
 define("BOT_TOKEN", EnvReader::get('BOT_TOKEN'));
 define("AI_TOKEN", EnvReader::get('AI_TOKEN'));
