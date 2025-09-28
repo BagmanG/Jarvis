@@ -60,54 +60,78 @@
     <!-- Top bar -->
     <header class="sticky top-0 z-30 backdrop-blur bg-black/10">
         <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+            <!-- Кнопку-стрелку убрали -->
             <h1 class="text-xl font-semibold">Джарвис</h1>
             <div class="ml-auto flex items-center gap-2">
-                <!-- Кнопка настроек -->
-                <form method="post" style="display:inline;">
-                    <button type="button" onclick="document.getElementById('designModal').classList.remove('hidden')" class="p-2 rounded-xl hover:bg-white/5" title="Настройки дизайна">
-                        <i class="fa-solid fa-gear"></i>
-                    </button>
-                </form>
+                <div class="relative">
+                    <input id="searchInput"
+                        class="peer w-56 md:w-96 bg-secondary rounded-xl pl-10 pr-3 py-2 outline-none placeholder-hint text-sm"
+                        placeholder="Поиск задач..." />
+                    <i
+                        class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-hint peer-focus:text-white"></i>
+                </div>
+                <!-- Кнопки Профиль и Плюс в шапке удалены -->
             </div>
         </div>
     </header>
-    <!-- Модальное окно выбора дизайна -->
-    <div id="designModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/40">
-        <div class="relative w-full max-w-xs mx-auto bg-secondary rounded-2xl p-6 mt-24">
-            <h3 class="text-lg font-semibold mb-4">Выберите дизайн</h3>
-            <form method="post">
-                <?php global $DESIGN_TEMPLATES; foreach ($DESIGN_TEMPLATES as $id => $tpl): ?>
-                    <div class="mb-2">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="set_design" value="<?= $id ?>" <?= $currentDesign == $id ? 'checked' : '' ?>>
-                            <?= htmlspecialchars($tpl['name']) ?>
-                        </label>
-                    </div>
-                <?php endforeach; ?>
-                <div class="mt-4 flex gap-2">
-                    <button type="button" onclick="document.getElementById('designModal').classList.add('hidden')" class="px-4 py-2 rounded-xl bg-white/10">Отмена</button>
-                    <button type="submit" class="px-4 py-2 rounded-xl bg-accent text-white">Сохранить</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <script>
-        // Закрытие модального окна по клику вне
-        document.addEventListener('click', function(e) {
-            var modal = document.getElementById('designModal');
-            if (!modal.classList.contains('hidden') && !modal.contains(e.target) && e.target.closest('#designModal') === null) {
-                modal.classList.add('hidden');
-            }
-        });
-    </script>
+
     <main class="max-w-3xl mx-auto p-4 pt-3 space-y-4 pb-28">
-        <!-- Рендер задач через выбранный дизайн -->
-        <?php
-        // Здесь должен быть массив задач $tasks (получите из вашей логики)
-        $tasks = []; // TODO: получить задачи пользователя
-        $renderFunc = $DESIGN_TEMPLATES[$currentDesign]['render'] ?? 'render_calendar_design';
-        echo $renderFunc($tasks);
-        ?>
+        <!-- pb-28 для плавающей кнопки -->
+        <!-- Calendar card -->
+        <section class="bg-secondary rounded-2xl shadow-soft p-4">
+            <div class="flex items-center justify-between">
+                <button class="p-2 rounded-xl hover:bg-white/5" id="prevMonth"><i
+                        class="fa-solid fa-angle-left"></i></button>
+                <div class="text-sm text-hint" id="monthLabel">Фев 2018</div>
+                <button class="p-2 rounded-xl hover:bg-white/5" id="nextMonth"><i
+                        class="fa-solid fa-angle-right"></i></button>
+            </div>
+            <div class="mt-3 grid grid-cols-7 text-center text-xs text-hint">
+                <div>Пн</div>
+                <div>Вт</div>
+                <div>Ср</div>
+                <div>Чт</div>
+                <div>Пт</div>
+                <div>Сб</div>
+                <div>Вс</div>
+            </div>
+            <div id="calendarGrid" class="mt-2 grid grid-cols-7 gap-1"></div>
+        </section>
+
+        <!-- События под календарём -->
+        <section class="bg-secondary rounded-2xl p-4">
+            <div class="flex items-center gap-2 text-sm text-hint mb-2"><span
+                    class="w-2 h-2 bg-red-500 rounded-full"></span> События</div>
+            <div id="eventCard" class="bg-black/20 rounded-2xl p-3 flex items-center justify-between">
+                <div>
+                    <div class="font-medium" id="eventTitle">Нет задач</div>
+                    <div class="text-xs text-hint" id="eventDate">—</div>
+                </div>
+                <div class="text-xs font-medium" id="eventTime"></div>
+            </div>
+        </section>
+
+        <!-- Мои задачи (Сегодня/Завтра/Предстоящие) -->
+        <section class="bg-secondary rounded-2xl p-2">
+            <div class="p-3">
+                <h2 class="text-lg font-semibold mb-2">Мои задачи</h2>
+                <div id="tasksBuckets" class="space-y-6"></div>
+            </div>
+        </section>
+
+        <!-- Дополнительные секции после Предстоящие: Невыполненные и Выполненные -->
+        <section class="bg-secondary rounded-2xl p-2">
+            <div class="p-3">
+                <h2 class="text-lg font-semibold mb-2">Невыполненные</h2>
+                <div id="tasksPending" class="space-y-3"></div>
+            </div>
+        </section>
+        <section class="bg-secondary rounded-2xl p-2">
+            <div class="p-3">
+                <h2 class="text-lg font-semibold mb-2">Выполненные</h2>
+                <div id="tasksCompleted" class="space-y-3"></div>
+            </div>
+        </section>
     </main>
 
     <!-- Нижний бар фильтров удалён полностью -->
