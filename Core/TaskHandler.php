@@ -288,18 +288,20 @@ class TaskHandler {
     
     // Парсинг даты из естественного языка
     public static function parseDate($dateInput): string {
+        require_once __DIR__ . '/DateTimeHelper.php';
+        
         $dateInput = strtolower(trim($dateInput));
         
         switch ($dateInput) {
             case 'today':
             case 'сегодня':
-                return date('Y-m-d');
+                return DateTimeHelper::getCurrentDateTime()['date'];
             case 'tomorrow':
             case 'завтра':
-                return date('Y-m-d', strtotime('+1 day'));
+                return DateTimeHelper::getTomorrowDate();
             case 'yesterday':
             case 'вчера':
-                return date('Y-m-d', strtotime('-1 day'));
+                return DateTimeHelper::getYesterdayDate();
             default:
                 // Пытаемся распарсить конкретную дату
                 $parsed = strtotime($dateInput);
@@ -307,7 +309,7 @@ class TaskHandler {
                     return date('Y-m-d', $parsed);
                 }
                 // Если не удалось распарсить, возвращаем сегодня
-                return date('Y-m-d');
+                return DateTimeHelper::getCurrentDateTime()['date'];
         }
     }
     
