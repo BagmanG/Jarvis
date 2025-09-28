@@ -30,7 +30,7 @@ foreach ($users as $user) {
     $userId = $user['userId'];
     $chatId = $user['chat_id'];
     // Получаем задачи на сегодня
-    $tasksResult = Core\TaskHandler::listTasks(['filter'=>'today'], $userId);
+    $tasksResult = TaskHandler::listTasks(['filter'=>'today'], $userId);
     $tasks = $tasksResult['tasks'] ?? [];
     if (!empty($tasks)) {
         $msg = "📝 Ваши задачи на сегодня:\n";
