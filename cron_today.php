@@ -2,27 +2,6 @@
 require_once __DIR__ . '/Core/Init.php';
 require_once __DIR__ . '/Core/TaskHandler.php';
 
-// --- sendMessage ---
-if (!function_exists('sendMessage')) {
-    function sendMessage($chat_id, $text) {
-        $url = "https://api.telegram.org/bot" . BOT_TOKEN . "/sendMessage";
-        $data = [
-            'chat_id' => $chat_id,
-            'text' => $text,
-            'parse_mode' => 'HTML'
-        ];
-        $options = [
-            'http' => [
-                'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
-                'method' => 'POST',
-                'content' => http_build_query($data)
-            ]
-        ];
-        $context = stream_context_create($options);
-        file_get_contents($url, false, $context);
-    }
-}
-
 // Получаем токен бота
 $botToken = BOT_TOKEN;
 
@@ -73,3 +52,21 @@ $mysqli->close();
 file_put_contents(__DIR__ . '/cron_today.log', date('Y-m-d H:i:s') . " - Рассылка задач на сегодня завершена\n", FILE_APPEND);
 
 echo "Рассылка задач на сегодня завершена\n";
+
+function sendMessage($chat_id, $text) {
+    $url = "https://api.telegram.org/bot" . BOT_TOKEN . "/sendMessage";
+    $data = [
+        'chat_id' => $chat_id,
+        'text' => $text,
+        'parse_mode' => 'HTML'
+    ];
+    $options = [
+        'http' => [
+            'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
+            'method' => 'POST',
+            'content' => http_build_query($data)
+        ]
+    ];
+    $context = stream_context_create($options);
+    file_get_contents($url, false, $context);
+}
