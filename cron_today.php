@@ -1,5 +1,7 @@
 <?php
-try{
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
 require_once __DIR__ . '/Core/Init.php';
 require_once __DIR__ . '/Core/TaskHandler.php';
 
@@ -70,8 +72,4 @@ function sendMessage($chat_id, $text) {
     ];
     $context = stream_context_create($options);
     file_get_contents($url, false, $context);
-}
-} catch (Exception $e) {
-    echo "Ошибка: " . $e->getMessage() . "\n";
-    file_put_contents(__DIR__ . '/cron_today.log', date('Y-m-d H:i:s') . " - Ошибка: " . $e->getMessage() . "\n", FILE_APPEND);
 }
