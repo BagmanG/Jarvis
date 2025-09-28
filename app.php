@@ -1,3 +1,58 @@
+<?php
+require_once __DIR__ . '/Core/designs.php';
+require_once __DIR__ . '/Core/Init.php';
+
+// Получение userId (пример, адаптируйте под вашу авторизацию)
+$userId = $_GET['user_id'] ?? 1;
+
+// Получение текущего дизайна пользователя из БД
+function getUserDesign($userId) {
+    $mysqli = new mysqli('localhost', DB_NAME, DB_PASSWORD, DB_NAME);
+    $stmt = $mysqli->prepare('SELECT design FROM Users WHERE userId = ?');
+    $stmt->bind_param('i', $userId);
+    $stmt->execute();
+    $stmt->bind_result($design);
+    $stmt->fetch();
+    $stmt->close();
+    $mysqli->close();
+    return $design ?: 1;
+}
+
+// Смена дизайна (через POST)
+if (isset($_POST['set_design'])) {
+    $newDesign = (int)$_POST['set_design'];
+    $mysqli = new mysqli('localhost', DB_NAME, DB_PASSWORD, DB_NAME);
+    $stmt = $mysqli->prepare('UPDATE Users SET design = ? WHERE userId = ?');
+    $stmt->bind_param('ii', $newDesign, $userId);
+    $stmt->execute();
+    $stmt->close();
+    $mysqli->close();
+    header('Location: ' . $_SERVER['REQUEST_URI']);
+    exit;
+}
+
+$currentDesign = getUserDesign($userId);
+
+// Получение задач пользователя
+function getUserTasks($userId) {
+    $mysqli = new mysqli('localhost', DB_NAME, DB_PASSWORD, DB_NAME);
+    $stmt = $mysqli->prepare('SELECT * FROM Tasks WHERE user_id = ? ORDER BY due_date, due_time');
+    $stmt->bind_param('i', $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $tasks = [];
+    while ($row = $result->fetch_assoc()) {
+        $tasks[] = $row;
+    }
+    $stmt->close();
+    $mysqli->close();
+    return $tasks;
+}
+
+$tasks = getUserTasks($userId);
+
+// Если нет задач, создадим тестовые данные
+?>
 <!doctype html>
 <html lang="ru">
 
@@ -103,8 +158,6 @@
     <main class="max-w-3xl mx-auto p-4 pt-3 space-y-4 pb-28">
         <!-- Рендер задач через выбранный дизайн -->
         <?php
-        // Здесь должен быть массив задач $tasks (получите из вашей логики)
-        $tasks = []; // TODO: получить задачи пользователя
         $renderFunc = $DESIGN_TEMPLATES[$currentDesign]['render'] ?? 'render_calendar_design';
         echo $renderFunc($tasks);
         ?>
