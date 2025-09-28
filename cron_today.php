@@ -39,7 +39,14 @@ foreach ($users as $user) {
         $msg = "📝 Ваши задачи на сегодня:\n";
         foreach ($tasks as $i => $task) {
             $msg .= ($i+1) . ". " . $task['title'];
-            if (!empty($task['due_time'])) $msg .= " (" . $task['due_time'] . ")";
+            if (!empty($task['due_time'])) {
+                // Обрезаем секунды, если есть
+                $time = $task['due_time'];
+                if (strlen($time) > 5) {
+                    $time = substr($time, 0, 5);
+                }
+                $msg .= " (" . $time . ")";
+            }
             if (!empty($task['description'])) $msg .= "\n   — " . $task['description'];
             $msg .= "\n";
         }
