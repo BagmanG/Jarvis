@@ -300,7 +300,13 @@ private function calculateReminderTime($reminderType) {
     private function sendReminder($task, $botToken) {
         $message = "🔔 Напоминание!\n";
         $message .= "Задача: {$task['title']}\n";
-        $message .= "Время: {$task['due_date']} {$task['due_time']}\n";
+        // Форматируем время без секунд
+        $dueTime = $task['due_time'];
+        // Если время в формате H:i:s, обрезаем до H:i
+        if (preg_match('/^\\d{2}:\\d{2}:\\d{2}$/', $dueTime)) {
+            $dueTime = substr($dueTime, 0, 5);
+        }
+        $message .= "Время: {$task['due_date']} {$dueTime}\n";
         $message .= "Приоритет: " . $this->getPriorityText($task['priority']);
         
         if (!empty($task['description'])) {
