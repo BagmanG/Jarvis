@@ -79,6 +79,18 @@ class TaskHandler {
                         ]
                     ]
                 ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'get_user_info',
+                    'description' => 'Получить информацию о пользователе (имя и описание)',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [],
+                        'required' => []
+                    ]
+                ]
             ]
         ];
     }
@@ -98,6 +110,8 @@ class TaskHandler {
                 return self::deleteTask($arguments, $userId);
             case 'list_tasks':
                 return self::listTasks($arguments, $userId);
+            case 'get_user_info':
+                return self::getUserInfo($arguments, $userId);
             default:
                 if (function_exists('sendMessage') && isset($GLOBALS['debug_chat_id'])) {
                     ///DEBUG
@@ -310,6 +324,67 @@ class TaskHandler {
                 }
                 // Если не удалось распарсить, возвращаем сегодня
                 return DateTimeHelper::getCurrentDateTime()['date'];
+        }
+    }
+    
+    // Получение информации о пользователе
+    public static function getUserInfo($args, $userId): array {
+        try {
+            $mysqli = self::getConnection();
+            
+            // Получаем информацию о пользователе из таблицы Users
+            $sql = "SELECT name, about FROM Users WHERE userId = ?";
+            $stmt = $mysqli->prepare($sql);
+            $stmt->bind_param('i', $userId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            if ($result->num_rows > 0) {
+                $row = $result->fetch_assoc();
+                $name = $row['name'] ?? '';
+                $about = $row['about'] ?? '';
+                
+                $stmt->close();
+                $mysqli->close();
+                
+                if (!empty($name) && !empty($about)) {
+                    return [
+                        'success' => true,
+                        'message' => "Информация о пользователе получена",
+                        'user_info' => [
+                            'name' => $name,
+                            'about' => $about
+                        ]
+                    ];
+                } else {
+                    return [
+                        'success' => true,
+                        'message' => "Информация о пользователе не найдена или неполная",
+                        'user_info' => [
+                            'name' => $name,
+                            'about' => $about
+                        ]
+                    ];
+                }
+            } else {
+                $stmt->close();
+                $mysqli->close();
+                
+                return [
+                    'success' => true,
+                    'message' => "Пользователь не найден в базе данных",
+                    'user_info' => [
+                        'name' => '',
+                        'about' => ''
+                    ]
+                ];
+            }
+            
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Ошибка при получении информации о пользователе: ' . $e->getMessage()
+            ];
         }
     }
     
