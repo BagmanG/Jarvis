@@ -309,7 +309,6 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
     }
     elseif (strpos($text, "/stats") === 0) {
         require_once 'Core/TaskHandler.php';
-        require_once 'Core/StatsImageGenerator.php';
         
         $userId = Vars::getUserId();
         if (!$userId) {
@@ -390,16 +389,15 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
                 $reportText .= "• У вас много задач с высоким приоритетом. Попробуйте пересмотреть приоритеты - не все задачи могут быть критичными.\n";
             }
             
-            // Генерируем изображение
+            // Используем существующее изображение
             $imagePath = __DIR__ . '/assets/images/stats.jpg';
-            $imageGenerated = StatsImageGenerator::generateStatsImage($stats, $imagePath);
             
             // Отправляем отчёт
-            if ($imageGenerated && file_exists($imagePath)) {
+            if (file_exists($imagePath)) {
                 // Отправляем изображение с подписью
                 sendPhoto($chat_id, $imagePath, $reportText);
             } else {
-                // Если не удалось создать изображение, отправляем только текст
+                // Если изображение не найдено, отправляем только текст
                 sendMessage($chat_id, $reportText);
             }
             
