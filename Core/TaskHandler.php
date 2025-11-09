@@ -49,7 +49,7 @@ class TaskHandler {
                 'type' => 'function',
                 'function' => [
                     'name' => 'delete_task',
-                    'description' => 'Удалить задачу из todo списка. Можно указать либо task_id, либо title (название задачи). Если указано название, будет удалена первая найденная задача с таким названием.',
+                    'description' => 'Удалить задачу из todo списка. Можно указать либо task_id, либо title (название задачи). Если указано название, будет удалена первая найденная задача с таким названием. Можно также указать due_date для более точного поиска (сегодня, завтра, или конкретная дата в формате Y-m-d). ВАЖНО: Если пользователь указывает дату вместе с названием задачи (например "удали задачу на завтра купить колу"), обязательно используй параметр due_date для точного поиска задачи.',
                     'parameters' => [
                         'type' => 'object',
                         'properties' => [
@@ -60,6 +60,10 @@ class TaskHandler {
                             'title' => [
                                 'type' => 'string',
                                 'description' => 'Название задачи для удаления (опционально, если указан task_id)'
+                            ],
+                            'due_date' => [
+                                'type' => 'string',
+                                'description' => 'Дата задачи для более точного поиска (сегодня, завтра, или конкретная дата в формате Y-m-d). Используется вместе с title для поиска задачи по названию и дате.'
                             ]
                         ]
                     ]
@@ -188,27 +192,56 @@ class TaskHandler {
         try {
             $taskId = $args['task_id'] ?? 0;
             $title = $args['title'] ?? '';
+            $dueDate = $args['due_date'] ?? '';
             
             $mysqli = self::getConnection();
             
-            // Если передан title, сначала находим задачу по названию
+            // Если передан title, сначала находим задачу по названию (и дате, если указана)
             if (!empty($title) && !$taskId) {
-                // Сначала пробуем точное совпадение (без учета регистра)
-                $findSql = "SELECT `id`, `title` FROM `Tasks` WHERE `user_id` = ? AND LOWER(`title`) = LOWER(?) LIMIT 1";
-                $findStmt = $mysqli->prepare($findSql);
-                $findStmt->bind_param('is', $userId, $title);
-                $findStmt->execute();
-                $result = $findStmt->get_result();
+                // Парсим дату, если она указана
+                $parsedDate = '';
+                if (!empty($dueDate)) {
+                    $parsedDate = self::parseDate($dueDate);
+                }
                 
-                // Если точное совпадение не найдено, пробуем частичное совпадение
-                if ($result->num_rows == 0) {
-                    $findStmt->close();
-                    $findSql = "SELECT `id`, `title` FROM `Tasks` WHERE `user_id` = ? AND LOWER(`title`) LIKE LOWER(?) LIMIT 1";
+                // Строим SQL запрос с учетом даты
+                if (!empty($parsedDate)) {
+                    // Сначала пробуем точное совпадение по названию и дате (без учета регистра)
+                    $findSql = "SELECT `id`, `title`, `due_date` FROM `Tasks` WHERE `user_id` = ? AND LOWER(`title`) = LOWER(?) AND `due_date` = ? LIMIT 1";
                     $findStmt = $mysqli->prepare($findSql);
-                    $searchTitle = '%' . $title . '%';
-                    $findStmt->bind_param('is', $userId, $searchTitle);
+                    $findStmt->bind_param('iss', $userId, $title, $parsedDate);
                     $findStmt->execute();
                     $result = $findStmt->get_result();
+                    
+                    // Если точное совпадение не найдено, пробуем частичное совпадение по названию с датой
+                    if ($result->num_rows == 0) {
+                        $findStmt->close();
+                        $findSql = "SELECT `id`, `title`, `due_date` FROM `Tasks` WHERE `user_id` = ? AND LOWER(`title`) LIKE LOWER(?) AND `due_date` = ? LIMIT 1";
+                        $findStmt = $mysqli->prepare($findSql);
+                        $searchTitle = '%' . $title . '%';
+                        $findStmt->bind_param('iss', $userId, $searchTitle, $parsedDate);
+                        $findStmt->execute();
+                        $result = $findStmt->get_result();
+                    }
+                } else {
+                    // Если дата не указана, ищем только по названию
+                    // Сначала пробуем точное совпадение (без учета регистра)
+                    $findSql = "SELECT `id`, `title` FROM `Tasks` WHERE `user_id` = ? AND LOWER(`title`) = LOWER(?) LIMIT 1";
+                    $findStmt = $mysqli->prepare($findSql);
+                    $findStmt->bind_param('is', $userId, $title);
+                    $findStmt->execute();
+                    $result = $findStmt->get_result();
+                    
+                    // Если точное совпадение не найдено, пробуем частичное совпадение
+                    if ($result->num_rows == 0) {
+                        $findStmt->close();
+                        $findSql = "SELECT `id`, `title` FROM `Tasks` WHERE `user_id` = ? AND LOWER(`title`) LIKE LOWER(?) LIMIT 1";
+                        $findStmt = $mysqli->prepare($findSql);
+                        $searchTitle = '%' . $title . '%';
+                        $findStmt->bind_param('is', $userId, $searchTitle);
+                        $findStmt->execute();
+                        $result = $findStmt->get_result();
+                    }
                 }
                 
                 if ($result->num_rows > 0) {
@@ -218,9 +251,10 @@ class TaskHandler {
                 } else {
                     $findStmt->close();
                     $mysqli->close();
+                    $dateMsg = !empty($parsedDate) ? " на дату $parsedDate" : "";
                     return [
                         'success' => false,
-                        'message' => "❌ Задача с названием '$title' не найдена"
+                        'message' => "❌ Задача с названием '$title'$dateMsg не найдена"
                     ];
                 }
             }
