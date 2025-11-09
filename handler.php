@@ -98,20 +98,15 @@ class TaskHandler {
         $sql .= " AND due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY)";
     } elseif ($filter === 'completed') {
         $sql .= " AND status = 'completed'";
-    } else {
-        // Для фильтра 'all' показываем все задачи кроме completed
+    } elseif ($filter === 'pending') {
         $sql .= " AND status != 'completed'";
     }
+    // Для фильтра 'all' показываем все задачи без ограничений
     
     $sql .= " ORDER BY due_date, due_time";
     
     $stmt = $this->conn->prepare($sql);
-    
-    if ($filter === 'all' || $filter === 'completed') {
-        $stmt->bind_param("i", $userId);
-    } else {
-        $stmt->bind_param("i", $userId);
-    }
+    $stmt->bind_param("i", $userId);
     
     $stmt->execute();
     $result = $stmt->get_result();
@@ -125,33 +120,64 @@ class TaskHandler {
 }
 
     private function updateTask($userId) {
-        $data = json_decode(file_get_contents('php://input'), true);
+        // Поддержка как JSON, так и FormData
+        $rawInput = file_get_contents('php://input');
+        $data = json_decode($rawInput, true);
         
-        $stmt = $this->conn->prepare("
-            UPDATE Tasks 
-            SET title = ?, description = ?, due_date = ?, due_time = ?, 
-                priority = ?, reminder = ?, status = ?, reminder_sent = ?
-            WHERE id = ? AND user_id = ?
-        ");
+        // Если JSON не удалось распарсить или данные пришли через POST, используем $_POST
+        if (!$data || empty($data)) {
+            $data = $_POST;
+        }
         
-        $reminderSent = $data['reminder_sent'] ?? false;
-        $stmt->bind_param("ssssssssii",
-            $data['title'],
-            $data['description'],
-            $data['due_date'],
-            $data['due_time'],
-            $data['priority'],
-            $data['reminder'],
-            $data['status'],
-            $reminderSent,
-            $data['task_id'],
-            $userId
-        );
+        $taskId = $data['task_id'] ?? $_POST['task_id'] ?? 0;
+        if (!$taskId) {
+            return json_encode(['error' => 'Task ID is required']);
+        }
+        
+        // Если передан только статус (для toggleTaskStatus)
+        if (isset($data['status']) && !isset($data['title'])) {
+            $status = $data['status'];
+            $stmt = $this->conn->prepare("
+                UPDATE Tasks 
+                SET status = ?
+                WHERE id = ? AND user_id = ?
+            ");
+            $stmt->bind_param("sii", $status, $taskId, $userId);
+        } else {
+            // Полное обновление задачи
+            $title = $data['title'] ?? '';
+            $description = $data['description'] ?? '';
+            $due_date = $data['due_date'] ?? '';
+            $due_time = $data['due_time'] ?? '';
+            $priority = $data['priority'] ?? 'medium';
+            $reminder = $data['reminder'] ?? 'none';
+            $status = $data['status'] ?? 'pending';
+            $reminderSent = $data['reminder_sent'] ?? false;
+            
+            $stmt = $this->conn->prepare("
+                UPDATE Tasks 
+                SET title = ?, description = ?, due_date = ?, due_time = ?, 
+                    priority = ?, reminder = ?, status = ?, reminder_sent = ?
+                WHERE id = ? AND user_id = ?
+            ");
+            $stmt->bind_param("ssssssssii",
+                $title,
+                $description,
+                $due_date,
+                $due_time,
+                $priority,
+                $reminder,
+                $status,
+                $reminderSent,
+                $taskId,
+                $userId
+            );
+        }
 
         if ($stmt->execute()) {
             return json_encode(['success' => true]);
         } else {
-            return json_encode(['error' => 'Failed to update task']);
+            return json_encode(['error' => 'Failed to update task: ' . $stmt->error]);
         }
     }
 

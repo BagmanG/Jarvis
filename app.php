@@ -504,7 +504,10 @@
         </div>`);
 
         // чекбокс — смена статуса
-        el.find('button').first().on('click', () => toggleTaskStatus(task.id, task.status));
+        el.find('button').first().on('click', function(e) {
+            e.stopPropagation();
+            toggleTaskStatus(task.id, task.status);
+        });
 
         // кнопка меню — открытие/закрытие
         el.find('.task-menu-btn').on('click', function(e) {
@@ -521,9 +524,18 @@
         });
 
         // действия меню
-        el.find('.action-toggle').on('click', () => toggleTaskStatus(task.id, task.status));
-        el.find('.action-edit').on('click', () => editTask(task));
-        el.find('.action-delete').on('click', () => deleteTask(task.id));
+        el.find('.action-toggle').on('click', function(e) {
+            e.stopPropagation();
+            toggleTaskStatus(task.id, task.status);
+        });
+        el.find('.action-edit').on('click', function(e) {
+            e.stopPropagation();
+            editTask(task);
+        });
+        el.find('.action-delete').on('click', function(e) {
+            e.stopPropagation();
+            deleteTask(task.id);
+        });
 
         return el;
     }
@@ -631,24 +643,33 @@
     }
 
     function toggleTaskStatus(taskId, currentStatus) {
-        console.log("Toggled");
         const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
         const formData = new FormData();
         formData.append('user_id', currentUserId);
         formData.append('task_id', taskId);
         formData.append('status', newStatus);
+        
+        // Закрываем меню перед отправкой
+        hideTaskMenus();
+        
         $.ajax({
             url: 'handler.php?action=update',
             type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
+            dataType: 'json',
             success: function(result) {
-                if (result.success) {
+                if (result && result.success) {
                     loadTasks();
                 } else {
-                    console.log("Error:" + result.error);
+                    console.error("Ошибка обновления статуса:", result?.error || 'Неизвестная ошибка');
+                    alert('Не удалось обновить статус задачи');
                 }
+            },
+            error: function(xhr, status, error) {
+                console.error("Ошибка AJAX:", error);
+                alert('Ошибка соединения с сервером');
             }
         });
     }
