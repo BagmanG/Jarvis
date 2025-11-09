@@ -67,7 +67,7 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
             try {
                 $transcription = transcribeAudio($temp_file);
                 sendMessage($chat_id, "Думаю...");
-                
+                sendChatAction($chat_id, "typing");
                 // Получаем историю сообщений - ИСПРАВЛЕНО: убрано self::
                 $history = getMessageHistory();
                 
@@ -446,7 +446,7 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
         }
         
         sendMessage($chat_id, "Думаю...");
-        
+        sendChatAction($chat_id, "typing");
         try {
             // Получаем историю сообщений - ИСПРАВЛЕНО: убрано self::
             $history = getMessageHistory();
@@ -571,6 +571,25 @@ function sendMessage($chat_id, $text) {
         'chat_id' => $chat_id,
         'text' => $text,
         'parse_mode' => 'HTML'
+    ];
+    
+    $options = [
+        'http' => [
+            'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
+            'method' => 'POST',
+            'content' => http_build_query($data)
+        ]
+    ];
+    
+    $context = stream_context_create($options);
+    file_get_contents($url, false, $context);
+}
+
+function sendChatAction($chat_id, $action = 'typing') {
+    $url = "https://api.telegram.org/bot" . BOT_TOKEN . "/sendChatAction";
+    $data = [
+        'chat_id' => $chat_id,
+        'action' => $action
     ];
     
     $options = [
