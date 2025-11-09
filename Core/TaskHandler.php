@@ -49,16 +49,19 @@ class TaskHandler {
                 'type' => 'function',
                 'function' => [
                     'name' => 'delete_task',
-                    'description' => 'Удалить задачу из todo списка',
+                    'description' => 'Удалить задачу из todo списка. Можно указать либо task_id, либо title (название задачи). Если указано название, будет удалена первая найденная задача с таким названием.',
                     'parameters' => [
                         'type' => 'object',
                         'properties' => [
                             'task_id' => [
                                 'type' => 'integer',
-                                'description' => 'ID задачи для удаления'
+                                'description' => 'ID задачи для удаления (опционально, если указан title)'
+                            ],
+                            'title' => [
+                                'type' => 'string',
+                                'description' => 'Название задачи для удаления (опционально, если указан task_id)'
                             ]
-                        ],
-                        'required' => ['task_id']
+                        ]
                     ]
                 ]
             ],
@@ -184,16 +187,68 @@ class TaskHandler {
     public static function deleteTask($args, $userId): array {
         try {
             $taskId = $args['task_id'] ?? 0;
+            $title = $args['title'] ?? '';
             
+            $mysqli = self::getConnection();
+            
+            // Если передан title, сначала находим задачу по названию
+            if (!empty($title) && !$taskId) {
+                // Сначала пробуем точное совпадение (без учета регистра)
+                $findSql = "SELECT `id`, `title` FROM `Tasks` WHERE `user_id` = ? AND LOWER(`title`) = LOWER(?) LIMIT 1";
+                $findStmt = $mysqli->prepare($findSql);
+                $findStmt->bind_param('is', $userId, $title);
+                $findStmt->execute();
+                $result = $findStmt->get_result();
+                
+                // Если точное совпадение не найдено, пробуем частичное совпадение
+                if ($result->num_rows == 0) {
+                    $findStmt->close();
+                    $findSql = "SELECT `id`, `title` FROM `Tasks` WHERE `user_id` = ? AND LOWER(`title`) LIKE LOWER(?) LIMIT 1";
+                    $findStmt = $mysqli->prepare($findSql);
+                    $searchTitle = '%' . $title . '%';
+                    $findStmt->bind_param('is', $userId, $searchTitle);
+                    $findStmt->execute();
+                    $result = $findStmt->get_result();
+                }
+                
+                if ($result->num_rows > 0) {
+                    $row = $result->fetch_assoc();
+                    $taskId = $row['id'];
+                    $findStmt->close();
+                } else {
+                    $findStmt->close();
+                    $mysqli->close();
+                    return [
+                        'success' => false,
+                        'message' => "❌ Задача с названием '$title' не найдена"
+                    ];
+                }
+            }
+            
+            // Проверяем, что у нас есть task_id для удаления
             if (!$taskId) {
+                $mysqli->close();
                 return [
                     'success' => false,
-                    'message' => 'ID задачи не указан'
+                    'message' => 'Не указан ID задачи или название задачи для удаления'
                 ];
             }
             
+            // Получаем название задачи перед удалением для сообщения
+            $getTitleSql = "SELECT `title` FROM `Tasks` WHERE `id` = ? AND `user_id` = ?";
+            $getTitleStmt = $mysqli->prepare($getTitleSql);
+            $getTitleStmt->bind_param('ii', $taskId, $userId);
+            $getTitleStmt->execute();
+            $titleResult = $getTitleStmt->get_result();
+            $taskTitle = '';
+            if ($titleResult->num_rows > 0) {
+                $titleRow = $titleResult->fetch_assoc();
+                $taskTitle = $titleRow['title'];
+            }
+            $getTitleStmt->close();
+            
+            // Удаляем задачу
             $sql = "DELETE FROM `Tasks` WHERE `id` = ? AND `user_id` = ?";
-            $mysqli = self::getConnection();
             $stmt = $mysqli->prepare($sql);
             $stmt->bind_param('ii', $taskId, $userId);
             
@@ -201,9 +256,13 @@ class TaskHandler {
                 $stmt->close();
                 $mysqli->close();
                 
+                $message = !empty($taskTitle) 
+                    ? "✅ Задача '$taskTitle' успешно удалена"
+                    : "✅ Задача с ID $taskId успешно удалена";
+                
                 return [
                     'success' => true,
-                    'message' => "✅ Задача с ID $taskId успешно удалена"
+                    'message' => $message
                 ];
             } else {
                 $stmt->close();
