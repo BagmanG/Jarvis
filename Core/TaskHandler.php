@@ -86,6 +86,30 @@ class TaskHandler {
                         ]
                     ]
                 ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'complete_task',
+                    'description' => 'Выполнить задачу (отметить как выполненную). Можно указать либо task_id, либо title (название задачи). Если указано название, будет выполнена первая найденная задача с таким названием. Можно также указать due_date для более точного поиска (сегодня, завтра, или конкретная дата в формате Y-m-d). ВАЖНО: Если пользователь указывает дату вместе с названием задачи (например "выполни задачу на завтра купить колу"), обязательно используй параметр due_date для точного поиска задачи.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'task_id' => [
+                                'type' => 'integer',
+                                'description' => 'ID задачи для выполнения (опционально, если указан title)'
+                            ],
+                            'title' => [
+                                'type' => 'string',
+                                'description' => 'Название задачи для выполнения (опционально, если указан task_id)'
+                            ],
+                            'due_date' => [
+                                'type' => 'string',
+                                'description' => 'Дата задачи для более точного поиска (сегодня, завтра, или конкретная дата в формате Y-m-d). Используется вместе с title для поиска задачи по названию и дате.'
+                            ]
+                        ]
+                    ]
+                ]
             ]
         ];
     }
@@ -105,6 +129,8 @@ class TaskHandler {
                 return self::deleteTask($arguments, $userId);
             case 'list_tasks':
                 return self::listTasks($arguments, $userId);
+            case 'complete_task':
+                return self::completeTask($arguments, $userId);
             default:
                 if (function_exists('sendMessage') && isset($GLOBALS['debug_chat_id'])) {
                     ///DEBUG
@@ -305,6 +331,156 @@ class TaskHandler {
                 return [
                     'success' => false,
                     'message' => 'Задача не найдена или у вас нет прав на её удаление'
+                ];
+            }
+            
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Ошибка: ' . $e->getMessage()
+            ];
+        }
+    }
+    
+    // Выполнение задачи (отметка как выполненной)
+    public static function completeTask($args, $userId): array {
+        try {
+            $taskId = $args['task_id'] ?? 0;
+            $title = $args['title'] ?? '';
+            $dueDate = $args['due_date'] ?? '';
+            
+            $mysqli = self::getConnection();
+            
+            // Если передан title, сначала находим задачу по названию (и дате, если указана)
+            if (!empty($title) && !$taskId) {
+                // Парсим дату, если она указана
+                $parsedDate = '';
+                if (!empty($dueDate)) {
+                    $parsedDate = self::parseDate($dueDate);
+                }
+                
+                // Строим SQL запрос с учетом даты
+                if (!empty($parsedDate)) {
+                    // Сначала пробуем точное совпадение по названию и дате (без учета регистра)
+                    $findSql = "SELECT `id`, `title`, `due_date` FROM `Tasks` WHERE `user_id` = ? AND LOWER(`title`) = LOWER(?) AND `due_date` = ? LIMIT 1";
+                    $findStmt = $mysqli->prepare($findSql);
+                    $findStmt->bind_param('iss', $userId, $title, $parsedDate);
+                    $findStmt->execute();
+                    $result = $findStmt->get_result();
+                    
+                    // Если точное совпадение не найдено, пробуем частичное совпадение по названию с датой
+                    if ($result->num_rows == 0) {
+                        $findStmt->close();
+                        $findSql = "SELECT `id`, `title`, `due_date` FROM `Tasks` WHERE `user_id` = ? AND LOWER(`title`) LIKE LOWER(?) AND `due_date` = ? LIMIT 1";
+                        $findStmt = $mysqli->prepare($findSql);
+                        $searchTitle = '%' . $title . '%';
+                        $findStmt->bind_param('iss', $userId, $searchTitle, $parsedDate);
+                        $findStmt->execute();
+                        $result = $findStmt->get_result();
+                    }
+                } else {
+                    // Если дата не указана, ищем только по названию
+                    // Сначала пробуем точное совпадение (без учета регистра)
+                    $findSql = "SELECT `id`, `title` FROM `Tasks` WHERE `user_id` = ? AND LOWER(`title`) = LOWER(?) LIMIT 1";
+                    $findStmt = $mysqli->prepare($findSql);
+                    $findStmt->bind_param('is', $userId, $title);
+                    $findStmt->execute();
+                    $result = $findStmt->get_result();
+                    
+                    // Если точное совпадение не найдено, пробуем частичное совпадение
+                    if ($result->num_rows == 0) {
+                        $findStmt->close();
+                        $findSql = "SELECT `id`, `title` FROM `Tasks` WHERE `user_id` = ? AND LOWER(`title`) LIKE LOWER(?) LIMIT 1";
+                        $findStmt = $mysqli->prepare($findSql);
+                        $searchTitle = '%' . $title . '%';
+                        $findStmt->bind_param('is', $userId, $searchTitle);
+                        $findStmt->execute();
+                        $result = $findStmt->get_result();
+                    }
+                }
+                
+                if ($result->num_rows > 0) {
+                    $row = $result->fetch_assoc();
+                    $taskId = $row['id'];
+                    $findStmt->close();
+                } else {
+                    $findStmt->close();
+                    $mysqli->close();
+                    $dateMsg = !empty($parsedDate) ? " на дату $parsedDate" : "";
+                    return [
+                        'success' => false,
+                        'message' => "❌ Задача с названием '$title'$dateMsg не найдена"
+                    ];
+                }
+            }
+            
+            // Проверяем, что у нас есть task_id для выполнения
+            if (!$taskId) {
+                $mysqli->close();
+                return [
+                    'success' => false,
+                    'message' => 'Не указан ID задачи или название задачи для выполнения'
+                ];
+            }
+            
+            // Получаем название задачи перед обновлением для сообщения
+            $getTitleSql = "SELECT `title`, `status` FROM `Tasks` WHERE `id` = ? AND `user_id` = ?";
+            $getTitleStmt = $mysqli->prepare($getTitleSql);
+            $getTitleStmt->bind_param('ii', $taskId, $userId);
+            $getTitleStmt->execute();
+            $titleResult = $getTitleStmt->get_result();
+            $taskTitle = '';
+            $currentStatus = '';
+            if ($titleResult->num_rows > 0) {
+                $titleRow = $titleResult->fetch_assoc();
+                $taskTitle = $titleRow['title'];
+                $currentStatus = $titleRow['status'];
+            }
+            $getTitleStmt->close();
+            
+            // Проверяем, что задача существует
+            if (empty($taskTitle)) {
+                $mysqli->close();
+                return [
+                    'success' => false,
+                    'message' => 'Задача не найдена или у вас нет прав на её выполнение'
+                ];
+            }
+            
+            // Если задача уже выполнена, сообщаем об этом
+            if ($currentStatus === 'completed') {
+                $mysqli->close();
+                return [
+                    'success' => true,
+                    'message' => "✅ Задача '$taskTitle' уже была выполнена ранее"
+                ];
+            }
+            
+            // Обновляем статус задачи на 'completed'
+            $updatedDate = date('Y-m-d H:i:s');
+            $sql = "UPDATE `Tasks` SET `status` = 'completed', `updated_at` = ? WHERE `id` = ? AND `user_id` = ?";
+            $stmt = $mysqli->prepare($sql);
+            $stmt->bind_param('sii', $updatedDate, $taskId, $userId);
+            
+            if ($stmt->execute() && $stmt->affected_rows > 0) {
+                $stmt->close();
+                $mysqli->close();
+                
+                $message = !empty($taskTitle) 
+                    ? "✅ Задача '$taskTitle' успешно выполнена"
+                    : "✅ Задача с ID $taskId успешно выполнена";
+                
+                return [
+                    'success' => true,
+                    'message' => $message
+                ];
+            } else {
+                $stmt->close();
+                $mysqli->close();
+                
+                return [
+                    'success' => false,
+                    'message' => 'Не удалось выполнить задачу. Попробуйте позже.'
                 ];
             }
             
