@@ -293,7 +293,8 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
         $help_text .= "/start - начать работу\n";
         $help_text .= "/help - получить помощь\n";
         $help_text .= "/clear - очистить историю диалога\n";
-        $help_text .= "/support - обратиться в поддержку\n\n";
+        $help_text .= "/support - обратиться в поддержку\n";
+        $help_text .= "/stats - статистика эффективности за месяц\n\n";
         $help_text .= "🎯 Управление задачами:\n";
         $help_text .= "• Просто скажите 'добавь задачу' или 'покажи задачи'\n";
         $help_text .= "• Бот поддерживает удаление задач. Просто скажите 'удали задачу ***' или 'удали задачу *** на завтра' и т.п.\n";
@@ -305,6 +306,107 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
         $help_text .= "Просто пишите или говорите со мной как с обычным собеседником!!";
         
         sendMessage($chat_id, $help_text);
+    }
+    elseif (strpos($text, "/stats") === 0) {
+        require_once 'Core/TaskHandler.php';
+        require_once 'Core/StatsImageGenerator.php';
+        
+        $userId = Vars::getUserId();
+        if (!$userId) {
+            sendMessage($chat_id, "❌ Не удалось определить ваш ID пользователя.");
+            return;
+        }
+        
+        sendMessage($chat_id, "📊 Анализирую вашу эффективность...");
+        
+        try {
+            // Получаем статистику
+            $report = TaskHandler::getEfficiencyReport($userId);
+            
+            if (!$report['success']) {
+                sendMessage($chat_id, "❌ " . ($report['message'] ?? 'Ошибка при получении статистики'));
+                return;
+            }
+            
+            $stats = $report['stats'];
+            
+            if (empty($stats) || ($stats['total_tasks'] ?? 0) == 0) {
+                sendMessage($chat_id, "📊 У вас пока нет задач за последний месяц для анализа.");
+                return;
+            }
+            
+            // Формируем текстовый отчёт
+            $reportText = "📊 ОТЧЁТ ОБ ЭФФЕКТИВНОСТИ ЗА МЕСЯЦ\n\n";
+            $reportText .= "📈 Общая статистика:\n";
+            $reportText .= "• Всего задач: " . $stats['total_tasks'] . "\n";
+            $reportText .= "• Выполнено: " . $stats['completed_tasks'] . " ✅\n";
+            $reportText .= "• В работе: " . $stats['pending_tasks'] . " ⏳\n";
+            $reportText .= "• Просрочено: " . $stats['overdue_tasks'] . " ⚠️\n";
+            $reportText .= "• Процент выполнения: " . $stats['completion_rate'] . "%\n\n";
+            
+            $reportText .= "🎯 По приоритетам:\n";
+            $reportText .= "• Высокий: " . $stats['high_priority'] . "\n";
+            $reportText .= "• Средний: " . $stats['medium_priority'] . "\n";
+            $reportText .= "• Низкий: " . $stats['low_priority'] . "\n\n";
+            
+            // Примеры выполненных задач
+            if (!empty($stats['completed_examples'])) {
+                $reportText .= "✅ Примеры выполненных задач:\n";
+                foreach ($stats['completed_examples'] as $task) {
+                    $reportText .= "• " . $task['title'] . "\n";
+                }
+                $reportText .= "\n";
+            }
+            
+            // Примеры задач в работе
+            if (!empty($stats['pending_examples'])) {
+                $reportText .= "⏳ Примеры задач в работе:\n";
+                foreach ($stats['pending_examples'] as $task) {
+                    $reportText .= "• " . $task['title'];
+                    if ($task['due_date'] < date('Y-m-d')) {
+                        $reportText .= " (просрочено)";
+                    }
+                    $reportText .= "\n";
+                }
+                $reportText .= "\n";
+            }
+            
+            // Советы
+            $reportText .= "💡 Советы по улучшению эффективности:\n";
+            
+            if ($stats['completion_rate'] < 50) {
+                $reportText .= "• Ваш процент выполнения ниже 50%. Попробуйте ставить более реалистичные цели и разбивать большие задачи на меньшие.\n";
+            } elseif ($stats['completion_rate'] < 80) {
+                $reportText .= "• Хороший результат! Для улучшения попробуйте планировать задачи заранее и устанавливать напоминания.\n";
+            } else {
+                $reportText .= "• Отличная работа! Вы выполняете более 80% задач. Продолжайте в том же духе!\n";
+            }
+            
+            if ($stats['overdue_tasks'] > 0) {
+                $reportText .= "• У вас есть просроченные задачи. Рекомендую пересмотреть их приоритеты или перенести сроки.\n";
+            }
+            
+            if ($stats['high_priority'] > $stats['medium_priority'] + $stats['low_priority']) {
+                $reportText .= "• У вас много задач с высоким приоритетом. Попробуйте пересмотреть приоритеты - не все задачи могут быть критичными.\n";
+            }
+            
+            // Генерируем изображение
+            $imagePath = __DIR__ . '/assets/images/stats.jpg';
+            $imageGenerated = StatsImageGenerator::generateStatsImage($stats, $imagePath);
+            
+            // Отправляем отчёт
+            if ($imageGenerated && file_exists($imagePath)) {
+                // Отправляем изображение с подписью
+                sendPhoto($chat_id, $imagePath, $reportText);
+            } else {
+                // Если не удалось создать изображение, отправляем только текст
+                sendMessage($chat_id, $reportText);
+            }
+            
+        } catch (Exception $e) {
+            logError('Stats error: ' . $e->getMessage());
+            sendMessage($chat_id, "❌ Произошла ошибка при формировании отчёта: " . $e->getMessage());
+        }
     } 
     elseif (strpos($text, "/test") === 0) {
         $help_text = Vars::getUserId()."/".Vars::getChatId();
@@ -598,23 +700,43 @@ function sendChatAction($chat_id, $action = 'typing') {
 // Функция отправки фото с подписью
 function sendPhoto($chat_id, $photo_url, $caption = "") {
     $url = "https://api.telegram.org/bot" . BOT_TOKEN . "/sendPhoto";
-    $data = [
-        'chat_id' => $chat_id,
-        'photo' => $photo_url,
-        'caption' => $caption,
-        'parse_mode' => 'HTML'
-    ];
     
-    $options = [
-        'http' => [
-            'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
-            'method' => 'POST',
-            'content' => http_build_query($data)
-        ]
-    ];
-    
-    $context = stream_context_create($options);
-    file_get_contents($url, false, $context);
+    // Проверяем, является ли это локальным файлом
+    if (file_exists($photo_url)) {
+        // Отправляем локальный файл
+        $data = [
+            'chat_id' => $chat_id,
+            'photo' => new CURLFile($photo_url),
+            'caption' => $caption,
+            'parse_mode' => 'HTML'
+        ];
+        
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_exec($ch);
+        curl_close($ch);
+    } else {
+        // Отправляем по URL
+        $data = [
+            'chat_id' => $chat_id,
+            'photo' => $photo_url,
+            'caption' => $caption,
+            'parse_mode' => 'HTML'
+        ];
+        
+        $options = [
+            'http' => [
+                'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
+                'method' => 'POST',
+                'content' => http_build_query($data)
+            ]
+        ];
+        
+        $context = stream_context_create($options);
+        file_get_contents($url, false, $context);
+    }
 }
 
 if (isset($update["message"]) && $update["message"]["chat"]["id"] == SUPPORT_CHAT_ID) {
