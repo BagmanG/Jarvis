@@ -87,12 +87,15 @@
 .day-column.today {
   background: rgba(110,193,255,0.08);
 }
+.bg-secondary{
+    background-color: #1F2025;
+}
     </style>
 </head>
 
 <body class="min-h-screen">
     <!-- Top bar -->
-    <header class="sticky top-0 z-30 backdrop-blur bg-black/10">
+    <header class="sticky top-0 z-30 backdrop-blur bg-black/10" style="background-color: #000000;">
         <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
             <!-- Кнопку-стрелку убрали -->
             <h1 class="text-xl font-semibold">Джарвис</h1>
