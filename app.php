@@ -68,20 +68,21 @@
   background: #6EC1FF;
   color: #0A2540;
   border-radius: 10px;
-  padding: 8px 10px;
+  padding: 6px 8px;
 
   font-size: 12px;
-  line-height: 1.35;
+  line-height: 1.3;
 
   cursor: pointer;
 
-  white-space: normal;      /* ✅ перенос строк */
-  word-break: break-word;   /* ✅ длинные слова */
-  overflow: visible;        /* ✅ НИЧЕГО не режем */
+  height: 60px;            /* 🔒 фиксированная высота */
+  overflow: hidden;        /* 🔒 текст не влияет */
+  white-space: normal;     /* перенос строк */
+  word-break: break-word;
 
-  min-height: 48px;         /* ✅ базовая высота */
   box-sizing: border-box;
 }
+
 
 .day-column.today {
   background: rgba(110,193,255,0.08);
@@ -374,6 +375,7 @@ function placeTask(task, startOfWeek) {
     <div class="opacity-70 text-[10px]">${task.due_time}</div>
   </div>
 `);
+tile.attr('title', task.title);
 $('#tasksLayer').append(tile);
 
 const tileHeight = tile.outerHeight();
