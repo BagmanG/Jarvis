@@ -87,7 +87,7 @@
 .day-column.today {
   background: rgba(110,193,255,0.08);
 }
-.bg-secondary{
+.bgg{
     background-color: #1F2025;
 }
     </style>
@@ -102,7 +102,7 @@
             <div class="ml-auto flex items-center gap-2">
                 <div class="relative">
                     <input id="searchInput"
-                        class="peer w-56 md:w-96 bg-secondary rounded-xl pl-10 pr-3 py-2 outline-none placeholder-hint text-sm"
+                        class="peer w-56 md:w-96 bgg rounded-xl pl-10 pr-3 py-2 outline-none placeholder-hint text-sm"
                         placeholder="Поиск задач..." />
                     <i
                         class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-hint peer-focus:text-white"></i>
@@ -114,8 +114,8 @@
 
     <main class="h-[calc(100vh-64px)] overflow-hidden">
 
-  <section class="relative h-full bg-secondary">
-        <div class="flex items-center justify-between px-4 py-2 bg-secondary border-b border-white/5">
+  <section class="relative h-full bgg">
+        <div class="flex items-center justify-between px-4 py-2 bgg border-b border-white/5">
   <div class="flex items-center gap-2">
     <button id="prevWeek" class="px-2 py-1 rounded hover:bg-white/10">←</button>
     <button id="nextWeek" class="px-2 py-1 rounded hover:bg-white/10">→</button>
@@ -124,7 +124,7 @@
   <div id="weekLabel" class="text-sm text-hint"></div>
 </div>
     <!-- Header days -->
-    <div class="grid grid-cols-[64px_repeat(7,1fr)] sticky top-0 z-20 bg-secondary border-b border-white/5">
+    <div class="grid grid-cols-[64px_repeat(7,1fr)] sticky top-0 z-20 bgg border-b border-white/5">
       <div></div>
       <div class="text-center py-2 text-sm text-hint">Пн</div>
       <div class="text-center py-2 text-sm text-hint">Вт</div>
@@ -162,7 +162,7 @@
     <!-- Modal Add/Edit -->
     <div id="taskModal" class="hidden fixed inset-0 z-50 items-end md:items-center justify-center">
         <div class="absolute inset-0 bg-black/60" onclick="closeTaskModal()"></div>
-        <div class="relative w-full md:w-[520px] bg-secondary rounded-t-2xl md:rounded-2xl p-4">
+        <div class="relative w-full md:w-[520px] bgg rounded-t-2xl md:rounded-2xl p-4">
             <div class="flex items-center justify-between mb-3">
                 <h3 id="modalTitle" class="text-lg font-semibold">Добавить задачу</h3>
                 <button class="p-2 rounded-xl hover:bg-white/5" onclick="closeTaskModal()"><i
@@ -225,7 +225,7 @@
     <!-- Profile Modal (оставим на будущее, кнопка вызова скрыта) -->
     <div id="profileModal" class="hidden fixed inset-0 z-50 items-center justify-center">
         <div class="absolute inset-0 bg-black/60" onclick="closeProfile()"></div>
-        <div class="relative w-full md:w-[520px] bg-secondary rounded-2xl p-4">
+        <div class="relative w-full md:w-[520px] bgg rounded-2xl p-4">
             <div class="flex items-center justify-between mb-2">
                 <h3 class="text-lg font-semibold">Профиль</h3>
                 <button class="p-2 rounded-xl hover:bg-white/5" onclick="closeProfile()"><i
@@ -629,7 +629,7 @@ function openEditTask(task) {
               <div class="font-medium">${escapeHtml(task.title)}</div>
               <div class="relative">
                 <button class="task-menu-btn p-1 rounded hover:bg-white/10" data-menu="${id}"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                <div id="${id}" class="task-menu hidden absolute right-0 mt-1 w-44 bg-secondary rounded-xl shadow-soft overflow-hidden text-sm z-10">
+                <div id="${id}" class="task-menu hidden absolute right-0 mt-1 w-44 bgg rounded-xl shadow-soft overflow-hidden text-sm z-10">
                   <a class="block px-3 py-2 hover:bg-white/10 cursor-pointer action-toggle">${done?'Вернуть':'Выполнить'}</a>
                   <a class="block px-3 py-2 hover:bg-white/10 cursor-pointer action-edit">Редактировать</a>
                   <a class="block px-3 py-2 hover:bg-white/10 text-red-400 cursor-pointer action-delete">Удалить</a>
