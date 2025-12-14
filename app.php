@@ -90,36 +90,6 @@
 .bgg{
     background-color: #1F2025;
 }
-input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1); /* Чёрная → белая */
-    opacity: 0.8;
-    cursor: pointer;
-}
-
-/* Для Chrome/Safari/Edge - иконка часов (для time) */
-input[type="time"]::-webkit-calendar-picker-indicator {
-    filter: invert(1); /* Чёрная → белая */
-    opacity: 0.8;
-    cursor: pointer;
-}
-
-/* Для Firefox - тёмная тема для обоих типов */
-input[type="date"],
-input[type="time"] {
-    color-scheme: dark;
-}
-
-/* Для улучшения внешнего вида - добавляем отступ справа чтобы текст не наезжал на иконки */
-input[type="date"],
-input[type="time"] {
-    padding-right: 40px; /* Создаём место для иконки */
-}
-
-/* Опционально: убрать иконку очистки в IE/Edge */
-input[type="date"]::-ms-clear,
-input[type="time"]::-ms-clear {
-    display: none;
-}
     </style>
 </head>
 
