@@ -154,7 +154,8 @@
 
     <!-- Плавающая кнопка добавления (оставили, непрозрачная) -->
     <button
-        class="fixed bottom-6 right-5 w-14 h-14 rounded-full bg-accent text-white shadow-soft flex items-center justify-center hover:opacity-90"
+        class="fixed bottom-6 right-5 w-14 h-14 rounded-full text-white shadow-soft flex items-center justify-center hover:opacity-90"
+        style="background-color: #3f3f3f;"
         onclick="showAddTaskModal()" aria-label="Добавить задачу">
         <i class="fa-solid fa-plus"></i>
     </button>
