@@ -288,9 +288,20 @@ function renderWeekView(tasks) {
     placeTask(t, startOfWeek);
   });
 }
+function parseLocalDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d, 0, 0, 0, 0);
+}
 function placeTask(task, startOfWeek) {
-  const dayIndex = (new Date(task.due_date) - startOfWeek) / 86400000;
-  alert(dayIndex);
+  const taskDate = parseLocalDate(task.due_date);
+    const dayIndex =
+  Math.floor(
+    (taskDate - startOfWeek) / 86400000
+  );
+  alert(task.due_date+"_"+
+  taskDate.toDateString()+"_"+
+  startOfWeek.toDateString()+"_"+
+  dayIndex);
   if (dayIndex < 0 || dayIndex > 6) return;
 
   const [h, m] = task.due_time.split(':').map(Number);
@@ -316,9 +327,10 @@ function getStartOfWeek(date) {
   const d = new Date(date);
   const day = (d.getDay() + 6) % 7;
   d.setDate(d.getDate() - day);
-  d.setHours(0,0,0,0);
+  d.setHours(0, 0, 0, 0);
   return d;
 }
+
 
     // Init
     $(function() {
