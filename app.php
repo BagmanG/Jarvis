@@ -218,6 +218,7 @@
                 <div class="ml-auto space-x-2">
                     <button class="px-4 py-2 rounded-xl bg-white/10" onclick="closeTaskModal()">Отмена</button>
                     <button id="saveBtn" class="px-4 py-2 rounded-xl bg-accent text-white"
+                    style="background-color: #000000;"
                         onclick="submitTask()">Сохранить</button>
                 </div>
             </div>
