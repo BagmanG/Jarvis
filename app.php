@@ -16,7 +16,7 @@
                 colors: {
                     primary: '#1E1E2F',
                     secondary: '#2A2A3D',
-                    accent: '#4F46E5',
+                    accent: '#000000',
                     hint: '#9AA4B2',
                     card: '#232333',
                     textmain: '#FFFFFF'
