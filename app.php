@@ -68,13 +68,24 @@
   background: #6EC1FF;
   color: #0A2540;
   border-radius: 10px;
-  padding: 6px 8px;
+  padding: 8px 10px;
+
   font-size: 12px;
-  line-height: 1.2;
+  line-height: 1.35;
+
   cursor: pointer;
-  overflow: hidden;
+
+  white-space: normal;      /* ✅ перенос строк */
+  word-break: break-word;   /* ✅ длинные слова */
+  overflow: visible;        /* ✅ НИЧЕГО не режем */
+
+  min-height: 48px;         /* ✅ базовая высота */
+  box-sizing: border-box;
 }
 
+.day-column.today {
+  background: rgba(110,193,255,0.08);
+}
     </style>
 </head>
 
@@ -100,7 +111,14 @@
     <main class="h-[calc(100vh-64px)] overflow-hidden">
 
   <section class="relative h-full bg-secondary">
+        <div class="flex items-center justify-between px-4 py-2 bg-secondary border-b border-white/5">
+  <div class="flex items-center gap-2">
+    <button id="prevWeek" class="px-2 py-1 rounded hover:bg-white/10">←</button>
+    <button id="nextWeek" class="px-2 py-1 rounded hover:bg-white/10">→</button>
+  </div>
 
+  <div id="weekLabel" class="text-sm text-hint"></div>
+</div>
     <!-- Header days -->
     <div class="grid grid-cols-[64px_repeat(7,1fr)] sticky top-0 z-20 bg-secondary border-b border-white/5">
       <div></div>
@@ -271,23 +289,64 @@
     `);
   }
 }
+
+function prevWeek() {
+  selectedDate.setDate(selectedDate.getDate() - 7);
+  loadTasks();
+}
+
+function nextWeek() {
+  selectedDate.setDate(selectedDate.getDate() + 7);
+  loadTasks();
+}
+
+$('#prevWeek').on('click', prevWeek);
+$('#nextWeek').on('click', nextWeek);
+
+function updateWeekLabel(start) {
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+
+  $('#weekLabel').text(
+    `${start.toLocaleDateString()} – ${end.toLocaleDateString()}`
+  );
+}
+
+
 function renderWeekView(tasks) {
   renderHours();
-
+  
   const layer = $('#tasksLayer');
   layer.empty();
 
   const startOfWeek = getStartOfWeek(selectedDate);
+      updateWeekLabel(startOfWeek);
+
+      const today = new Date();
+today.setHours(0,0,0,0);
 
   for (let day = 0; day < 7; day++) {
-    layer.append(`<div class="day-column absolute top-0 bottom-0"
-      style="left:${day * 100 / 7}%; width:${100 / 7}%"></div>`);
-  }
+    const colDate = new Date(startOfWeek);
+    colDate.setDate(colDate.getDate() + day);
 
+    const isToday = colDate.getTime() === today.getTime();
+
+    layer.append(`
+    <div class="day-column absolute top-0 bottom-0 ${isToday ? 'today' : ''}"
+        style="left:${day * 100 / 7}%; width:${100 / 7}%">
+    </div>
+    `);
+  }
+  
   tasks.forEach(t => {
     placeTask(t, startOfWeek);
   });
 }
+$(document).on('keydown', e => {
+  if (e.key === 'ArrowLeft') prevWeek();
+  if (e.key === 'ArrowRight') nextWeek();
+});
+
 function parseLocalDate(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
   return new Date(y, m - 1, d, 0, 0, 0, 0);
@@ -298,10 +357,6 @@ function placeTask(task, startOfWeek) {
   Math.floor(
     (taskDate - startOfWeek) / 86400000
   );
-  alert(task.due_date+"_"+
-  taskDate.toDateString()+"_"+
-  startOfWeek.toDateString()+"_"+
-  dayIndex);
   if (dayIndex < 0 || dayIndex > 6) return;
 
   const [h, m] = task.due_time.split(':').map(Number);
@@ -309,17 +364,27 @@ function placeTask(task, startOfWeek) {
   const height = 60;
 
   const tile = $(`
-    <div class="task-tile"
-      style="
-        top:${top}px;
-        left:${dayIndex * 100 / 7}%;
-        width:${100 / 7 - 1}%;
-        height:${height}px;">
-      <div class="font-medium truncate">${escapeHtml(task.title)}</div>
-      <div class="opacity-70 text-[10px]">${task.due_time}</div>
-    </div>
-  `);
+  <div class="task-tile"
+    style="
+      top:${top}px;
+      left:${dayIndex * 100 / 7}%;
+      width:${100 / 7 - 1}%;
+    ">
+    <div class="font-medium">${escapeHtml(task.title)}</div>
+    <div class="opacity-70 text-[10px]">${task.due_time}</div>
+  </div>
+`);
+$('#tasksLayer').append(tile);
 
+const tileHeight = tile.outerHeight();
+const minHeight = 64;
+
+if (tileHeight > minHeight) {
+  const extra = tileHeight - minHeight;
+  $('#tasksLayer').height(
+    $('#tasksLayer').height() + extra
+  );
+}
   tile.on('click', () => openEditTask(task));
   $('#tasksLayer').append(tile);
 }
