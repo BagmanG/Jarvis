@@ -53,6 +53,28 @@
     .menu-open .task-menu {
         display: block
     }
+    .hour-row {
+  height: 64px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.day-column {
+  position: relative;
+  border-left: 1px solid rgba(255,255,255,0.04);
+}
+
+.task-tile {
+  position: absolute;
+  background: #6EC1FF;
+  color: #0A2540;
+  border-radius: 10px;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.2;
+  cursor: pointer;
+  overflow: hidden;
+}
+
     </style>
 </head>
 
@@ -75,64 +97,36 @@
         </div>
     </header>
 
-    <main class="max-w-3xl mx-auto p-4 pt-3 space-y-4 pb-28">
-        <!-- pb-28 для плавающей кнопки -->
-        <!-- Calendar card -->
-        <section class="bg-secondary rounded-2xl shadow-soft p-4">
-            <div class="flex items-center justify-between">
-                <button class="p-2 rounded-xl hover:bg-white/5" id="prevMonth"><i
-                        class="fa-solid fa-angle-left"></i></button>
-                <div class="text-sm text-hint" id="monthLabel">Фев 2018</div>
-                <button class="p-2 rounded-xl hover:bg-white/5" id="nextMonth"><i
-                        class="fa-solid fa-angle-right"></i></button>
-            </div>
-            <div class="mt-3 grid grid-cols-7 text-center text-xs text-hint">
-                <div>Пн</div>
-                <div>Вт</div>
-                <div>Ср</div>
-                <div>Чт</div>
-                <div>Пт</div>
-                <div>Сб</div>
-                <div>Вс</div>
-            </div>
-            <div id="calendarGrid" class="mt-2 grid grid-cols-7 gap-1"></div>
-        </section>
+    <main class="h-[calc(100vh-64px)] overflow-hidden">
 
-        <!-- События под календарём -->
-        <section class="bg-secondary rounded-2xl p-4">
-            <div class="flex items-center gap-2 text-sm text-hint mb-2"><span
-                    class="w-2 h-2 bg-red-500 rounded-full"></span> События</div>
-            <div id="eventCard" class="bg-black/20 rounded-2xl p-3 flex items-center justify-between">
-                <div>
-                    <div class="font-medium" id="eventTitle">Нет задач</div>
-                    <div class="text-xs text-hint" id="eventDate">—</div>
-                </div>
-                <div class="text-xs font-medium" id="eventTime"></div>
-            </div>
-        </section>
+  <section class="relative h-full bg-secondary">
 
-        <!-- Мои задачи (Сегодня/Завтра/Предстоящие) -->
-        <section class="bg-secondary rounded-2xl p-2">
-            <div class="p-3">
-                <h2 class="text-lg font-semibold mb-2">Мои задачи</h2>
-                <div id="tasksBuckets" class="space-y-6"></div>
-            </div>
-        </section>
+    <!-- Header days -->
+    <div class="grid grid-cols-[64px_repeat(7,1fr)] sticky top-0 z-20 bg-secondary border-b border-white/5">
+      <div></div>
+      <div class="text-center py-2 text-sm text-hint">Пн</div>
+      <div class="text-center py-2 text-sm text-hint">Вт</div>
+      <div class="text-center py-2 text-sm text-hint">Ср</div>
+      <div class="text-center py-2 text-sm text-hint">Чт</div>
+      <div class="text-center py-2 text-sm text-hint">Пт</div>
+      <div class="text-center py-2 text-sm text-hint">Сб</div>
+      <div class="text-center py-2 text-sm text-hint">Вс</div>
+    </div>
 
-        <!-- Дополнительные секции после Предстоящие: Невыполненные и Выполненные -->
-        <section class="bg-secondary rounded-2xl p-2">
-            <div class="p-3">
-                <h2 class="text-lg font-semibold mb-2">Невыполненные</h2>
-                <div id="tasksPending" class="space-y-3"></div>
-            </div>
-        </section>
-        <section class="bg-secondary rounded-2xl p-2">
-            <div class="p-3">
-                <h2 class="text-lg font-semibold mb-2">Выполненные</h2>
-                <div id="tasksCompleted" class="space-y-3"></div>
-            </div>
-        </section>
-    </main>
+    <!-- Grid -->
+    <div id="weekGrid" class="relative overflow-y-auto h-full">
+      <div class="grid grid-cols-[64px_repeat(7,1fr)]">
+        <!-- часы -->
+        <div id="timeColumn"></div>
+
+        <!-- дни -->
+        <div class="col-span-7 relative" id="tasksLayer"></div>
+      </div>
+    </div>
+
+  </section>
+</main>
+
 
     <!-- Нижний бар фильтров удалён полностью -->
 
@@ -266,6 +260,64 @@
         const tomorrow = new Date(getUTCDateWithOffset().getTime() + 86400000);
         return fmt(tomorrow);
     }
+    function renderHours() {
+  const col = $('#timeColumn');
+  col.empty();
+  for (let h = 7; h <= 23; h++) {
+    col.append(`
+      <div class="hour-row text-xs text-hint text-right pr-2 pt-1">
+        ${h}:00
+      </div>
+    `);
+  }
+}
+function renderWeekView(tasks) {
+  renderHours();
+
+  const layer = $('#tasksLayer');
+  layer.empty();
+
+  const startOfWeek = getStartOfWeek(selectedDate);
+
+  for (let day = 0; day < 7; day++) {
+    layer.append(`<div class="day-column absolute top-0 bottom-0"
+      style="left:${day * 100 / 7}%; width:${100 / 7}%"></div>`);
+  }
+
+  tasks.forEach(t => {
+    placeTask(t, startOfWeek);
+  });
+}
+function placeTask(task, startOfWeek) {
+  const dayIndex = (new Date(task.due_date) - startOfWeek) / 86400000;
+  if (dayIndex < 0 || dayIndex > 6) return;
+
+  const [h, m] = task.due_time.split(':').map(Number);
+  const top = ((h - 7) * 60 + m) * (64 / 60);
+  const height = 60;
+
+  const tile = $(`
+    <div class="task-tile"
+      style="
+        top:${top}px;
+        left:${dayIndex * 100 / 7}%;
+        width:${100 / 7 - 1}%;
+        height:${height}px;">
+      <div class="font-medium truncate">${escapeHtml(task.title)}</div>
+      <div class="opacity-70 text-[10px]">${task.due_time}</div>
+    </div>
+  `);
+
+  tile.on('click', () => openEditTask(task));
+  $('#tasksLayer').append(tile);
+}
+function getStartOfWeek(date) {
+  const d = new Date(date);
+  const day = (d.getDay() + 6) % 7;
+  d.setDate(d.getDate() - day);
+  d.setHours(0,0,0,0);
+  return d;
+}
 
     // Init
     $(function() {
@@ -389,8 +441,9 @@
                 if (response.tasks !== undefined) {
                     lastLoadedTasks = response.tasks;
                     renderCalendar();
-                    renderBuckets(response.tasks);
-                    renderStatusBlocks(response.tasks);
+                    renderWeekView(response.tasks);
+                    //renderBuckets(response.tasks);
+                    //renderStatusBlocks(response.tasks);
                 } else if (response.error) {
                     $('#tasksBuckets').html(
                         `<div class='text-center text-hint'>Ошибка: ${response.error}</div>`);
