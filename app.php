@@ -378,15 +378,9 @@ function placeTask(task, startOfWeek) {
 tile.attr('title', task.title);
 $('#tasksLayer').append(tile);
 
-const tileHeight = tile.outerHeight();
+
 const minHeight = 64;
 
-if (tileHeight > minHeight) {
-  const extra = tileHeight - minHeight;
-  $('#tasksLayer').height(
-    $('#tasksLayer').height() + extra
-  );
-}
   tile.on('click', () => openEditTask(task));
   $('#tasksLayer').append(tile);
 }
