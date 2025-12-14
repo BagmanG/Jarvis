@@ -290,6 +290,7 @@ function renderWeekView(tasks) {
 }
 function placeTask(task, startOfWeek) {
   const dayIndex = (new Date(task.due_date) - startOfWeek) / 86400000;
+  alert(dayIndex);
   if (dayIndex < 0 || dayIndex > 6) return;
 
   const [h, m] = task.due_time.split(':').map(Number);
