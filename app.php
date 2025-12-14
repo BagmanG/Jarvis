@@ -392,7 +392,18 @@ function getStartOfWeek(date) {
   return d;
 }
 
-
+function openEditTask(task) {
+  $('#modalTitle').text('Изменить задачу');
+  $('#deleteBtn').removeClass('hidden');
+  openTaskModal();
+  $('input[name="task_id"]').val(task.id);
+  $('input[name="title"]').val(task.title);
+  $('textarea[name="description"]').val(task.description || '');
+  $('input[name="due_date"]').val(task.due_date);
+  $('input[name="due_time"]').val(task.due_time);
+  $('select[name="priority"]').val(task.priority || 'medium');
+  $('select[name="reminder"]').val(task.reminder || 'none');
+}
     // Init
     $(function() {
         setupDateDefaults();
