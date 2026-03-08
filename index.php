@@ -346,6 +346,10 @@ if (isset($update["message"]) && $update["message"]["chat"]["id"] != SUPPORT_CHA
             sendMessage($chat_id, "❌ Произошла ошибка при очистке истории. Попробуйте позже.");
         }
     }
+    elseif (strpos($text, "/dkdtest") === 0) {
+        file_get_contents("https://bagmanov.com/dkd/new_record.php?company_id=2030205&master_id=4355863&service_id=21913435&datetime=2026-03-08%2016:00:00&first_name=Гадель&last_name=Загрутдинов&phone=79869265601&comments=Тест");
+        sendMessage($chat_id, "Запись создана:) На Сегодня в 16:00. На имя Гадель");
+    }
     elseif (strpos($text, "/image_sizes") === 0) {
         $sizes_text = "🖼️ Доступные размеры изображений:\n\n";
         $sizes = ImageGenerator::getAvailableSizes();
