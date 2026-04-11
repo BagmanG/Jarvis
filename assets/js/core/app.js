@@ -68,7 +68,7 @@ async function boot() {
       document.getElementById('loaderScreen').classList.add('hidden');
       document.getElementById('mainView').classList.remove('hidden');
       //showToast('Календарь готов ✨');
-    }, remaining);
+    }, remaining); 
   } catch (error) {
     handleBootError(error);
   }
