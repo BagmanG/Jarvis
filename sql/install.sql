@@ -1,5 +1,4 @@
-CREATE DATABASE IF NOT EXISTS `telegram_calendar` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `telegram_calendar`;
+USE `bagmanov13_jarv`;
 
 CREATE TABLE IF NOT EXISTS `files` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
