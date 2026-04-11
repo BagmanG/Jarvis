@@ -12,16 +12,19 @@ class Request
     }
 
     public function path(): string
-    {
-        $uri = $_SERVER['REQUEST_URI'] ?? '/';
-        $path = parse_url($uri, PHP_URL_PATH) ?: '/';
+{
+    $uri = $_SERVER['REQUEST_URI'] ?? '/';
+    $path = parse_url($uri, PHP_URL_PATH) ?: '/';
 
-        if (strpos($path, '/api/v1') === 0) {
-            $path = substr($path, 7);
-        }
-
-        return $path ?: '/';
+    $apiPos = strpos($path, '/api/v1/');
+    if ($apiPos !== false) {
+        $path = substr($path, $apiPos + strlen('/api/v1'));
+    } elseif (substr($path, -7) === '/api/v1') {
+        $path = '/';
     }
+
+    return $path ?: '/';
+}
 
     public function query(string $key = null, $default = null)
     {
