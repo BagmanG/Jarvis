@@ -82,8 +82,7 @@ button { cursor: pointer; border: 0; background: transparent; }
   padding: 8px 6px 14px;
   backdrop-filter: blur(18px);
   background: linear-gradient(180deg, rgba(245,247,251,.86), rgba(245,247,251,.48));
-  border-bottom-left-radius: 24px;
-  border-bottom-right-radius: 24px;
+  border-radius: 15px;
 }
 :root[data-theme='dark'] .glass-header {
   background: linear-gradient(180deg, rgba(9,12,19,.92), rgba(9,12,19,.55));
