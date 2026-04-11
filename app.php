@@ -20,7 +20,7 @@ date_default_timezone_set(config('app.timezone', 'UTC'));
     <div id="loaderScreen" class="loader-screen">
         <div class="loader-orb"></div>
         <div class="loader-copy">
-            <h1>Загружаем ваши данные...</h1>
+            <h1>Загружаем ваши данные....</h1>
             <p>Секунду, собираем календарь, профиль и ваши настройки.</p>
         </div>
         <button id="retryBootBtn" class="ios-button ios-button-primary hidden">Повторить</button>
