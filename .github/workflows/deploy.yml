@@ -2,38 +2,29 @@ name: Deploy PHP Telegram Bot via FTP
 
 on:
   push:
-    branches: [ main, refactor,design,dev ]
+    branches: [main, refactor]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
 
     steps:
-      # 1. Клонируем только последний коммит
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
 
-      # 2. Устанавливаем PHP
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
 
-      # 3. Создаем .env из Secrets
       - name: Create .env file
         run: |
-          cat > .env << EOF
-          BOT_TOKEN=${{ secrets.BOT_TOKEN }}
-          AI_TOKEN=${{ secrets.AI_TOKEN }}
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          DB_NAME=${{ secrets.DB_NAME }}
-          SUPPORT_CHAT_ID=${{ secrets.SUPPORT_CHAT_ID }}
-          EOF
+          echo "BOT_TOKEN=${{ secrets.BOT_TOKEN }}" > .env
+          echo "AI_TOKEN=${{ secrets.AI_TOKEN }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "SUPPORT_CHAT_ID=${{ secrets.SUPPORT_CHAT_ID }}" >> .env
 
-      # 4. Деплой через FTP с правильными настройками
       - name: FTP Deploy
         uses: SamKirkland/FTP-Deploy-Action@v4.3.0
         with:
@@ -42,15 +33,12 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
           server-dir: ./
+          dangerous-clean-slate: true
+          log-level: verbose
           exclude: |
-            **/.git
-            **/.git/**
+            **/.git*
             **/.github/**
             **/.gitignore
             **/.gitattributes
             **/.gitmodules
             **/README.md
-          state-name: .ftp-deploy-state  # Ключевой параметр для инкрементального деплоя
-          dangerous-clean-slate: false   # НЕ удалять всё на сервере
-          dry-run: false
-          log-level: verbose
