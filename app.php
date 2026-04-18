@@ -230,6 +230,6 @@ window.APP_CONFIG = {
     defaultTimezone: <?= json_encode(config('app.timezone', 'UTC'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
 };
 </script>
-<script type="module" src="assets/js/core/app.js?v=1.0.0"></script>
+<script type="module" src="assets/js/core/app.js?v=1.0.1"></script>
 </body>
 </html>
