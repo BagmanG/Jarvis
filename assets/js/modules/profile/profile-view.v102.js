@@ -84,12 +84,8 @@ function syncSegmentedSelection(targetId) {
 function renderAvatar(profile) {
   const target = document.getElementById('profileAvatarLarge');
   if (!target) return;
-  if (profile.avatar_url) {
-    target.innerHTML = `<img src="${profile.avatar_url}" alt="avatar">`;
-  } else {
-    const initial = (profile.display_name || profile.first_name || 'U').trim().charAt(0).toUpperCase();
-    target.innerHTML = `<span>${initial}</span>`;
-  }
+  const initial = (profile.display_name || profile.first_name || 'U').trim().charAt(0).toUpperCase();
+  target.innerHTML = `<span>${initial}</span>`;
 }
 
 export function getProfilePayload() {

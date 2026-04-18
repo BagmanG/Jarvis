@@ -61,13 +61,9 @@ function buildSummaryDots(summary) {
 
 function renderAvatarButton(profile) {
   const target = document.getElementById('profileButton');
-  if (!profile) return;
-  if (profile.avatar_thumbnail_url || profile.avatar_url) {
-    target.innerHTML = `<img src="${profile.avatar_thumbnail_url || profile.avatar_url}" alt="avatar">`;
-  } else {
-    const initial = (profile.display_name || profile.first_name || 'U').trim().charAt(0).toUpperCase();
-    target.innerHTML = `<span>${initial}</span>`;
-  }
+  if (!target || !profile) return;
+  const initial = (profile.display_name || profile.first_name || 'U').trim().charAt(0).toUpperCase();
+  target.innerHTML = `<span>${initial}</span>`;
 }
 
 export function shiftVisibleMonth(delta) {

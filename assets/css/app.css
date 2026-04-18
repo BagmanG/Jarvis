@@ -90,10 +90,10 @@ button { cursor: pointer; border: 0; background: transparent; }
 .header-top-row, .header-navigation-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .header-top-row { margin-bottom: 14px; }
 .header-actions { display: flex; align-items: center; gap: 10px; }
-.weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; flex: 1; }
-.weekdays-inline { padding: 6px 4px 10px; margin-bottom: 2px; }
+.weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; flex: 1; width: 100%; }
+.weekdays-inline { padding: 0 2px 8px; margin-bottom: 0; }
 .section-heading { font-size: 20px; font-weight: 800; }
-.weekdays span { text-align: center; color: var(--text-secondary); font-size: 13px; font-weight: 600; }
+.weekdays span { min-width: 0; text-align: center; color: var(--text-secondary); font-size: 12px; font-weight: 700; line-height: 1.2; letter-spacing: .01em; }
 .nav-inline-actions { display: flex; gap: 8px; }
 
 .card {
@@ -109,23 +109,25 @@ button { cursor: pointer; border: 0; background: transparent; }
   border-radius: 28px;
 }
 .content-area { display: grid; gap: 14px; padding-bottom: 90px; }
-.calendar-panel { padding: 14px; overflow: hidden; }
+.calendar-panel { padding: 12px; overflow: hidden; }
 .calendar-stage {
   position: relative;
   overflow: hidden;
   border-radius: 24px;
   background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.04));
-  padding: 10px 8px 8px;
+  padding: 12px 8px 10px;
 }
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  align-items: stretch;
 }
 .calendar-cell {
-  min-height: 76px;
-  border-radius: 20px;
-  padding: 10px 8px;
+  min-width: 0;
+  min-height: 64px;
+  border-radius: 16px;
+  padding: 8px 4px 7px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -145,19 +147,20 @@ button { cursor: pointer; border: 0; background: transparent; }
   box-shadow: 0 14px 30px var(--accent-soft);
 }
 .calendar-day-number {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
   display: grid;
   place-items: center;
   font-weight: 700;
+  font-size: 15px;
 }
 .calendar-dots {
   min-height: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
   flex-wrap: wrap;
 }
 .calendar-dot {
@@ -311,8 +314,7 @@ button { cursor: pointer; border: 0; background: transparent; }
 .segmented-control button.selected {
   background: var(--accent); color: white; border-color: transparent; box-shadow: 0 12px 28px var(--accent-soft);
 }
-.profile-content { display: grid; gap: 14px; }
-.profile-avatar-hint { padding: 14px 16px; background: var(--surface-soft); border: 1px solid var(--divider); border-radius: 18px; line-height: 1.45; }
+.profile-content { display: grid; gap: 14px; padding-bottom: 12px; }
 .profile-hero { display: grid; grid-template-columns: 92px 1fr; gap: 16px; padding: 18px; align-items: center; }
 .profile-avatar-large {
   width: 92px; height: 92px; border-radius: 999px; background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 80%, white 8%)); display: grid; place-items: center; overflow: hidden; color: white; font-size: 34px; font-weight: 800;
@@ -340,10 +342,16 @@ button { cursor: pointer; border: 0; background: transparent; }
 .enter-up-delay { animation-delay: .08s; }
 
 @media (max-width: 520px) {
-  .calendar-cell { min-height: 66px; border-radius: 16px; }
+  .main-view { padding: 0 12px 8px; }
+  .calendar-panel { padding: 10px; }
+  .calendar-stage { padding: 10px 6px 8px; }
+  .calendar-grid { gap: 2px; }
+  .calendar-cell { min-height: 56px; border-radius: 14px; padding: 6px 2px; }
+  .calendar-day-number { width: 28px; height: 28px; font-size: 14px; }
+  .weekdays { gap: 2px; }
+  .weekdays-inline { padding: 0 1px 6px; }
+  .weekdays span { font-size: 11px; }
   .agenda-header h2 { font-size: 24px; }
-  .calendar-grid { gap: 6px; }
-  .weekdays span { font-size: 12px; }
   .bottom-sheet { width: 100vw; }
   .profile-hero { grid-template-columns: 80px 1fr; }
   .profile-avatar-large { width: 80px; height: 80px; }
