@@ -25,6 +25,13 @@ return [
     'telegram' => [
         'bot_token' => '8228911470:AAGDl22PDWAXj6xFnCra2xUM3zXN_wPglPA',
     ],
+
+    'ai' => [
+        'api_key' => 'sk-aitunnel-ZZcmQfH8aw7aehBDSmBOBLYFodIY8VaB',
+        'api_url' => 'https://api.aitunnel.ru/v1',
+        'chat_model' => 'gpt-4o-mini',
+        'transcription_model' => 'whisper-1',
+    ],
     'cors' => [
         'allowed_origins' => ['*'],
     ],

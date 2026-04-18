@@ -60,6 +60,33 @@ class TaskRepository
         return array_map([$this, 'serialize'], $stmt->fetchAll());
     }
 
+
+    public function searchByTitle(int $userId, string $title, ?string $date = null, int $limit = 10): array
+    {
+        $sql = 'SELECT * FROM tasks WHERE user_id = :user_id AND deleted_at IS NULL AND title LIKE :title';
+        $params = [
+            'user_id' => $userId,
+            'title' => '%' . $title . '%',
+        ];
+
+        if ($date) {
+            $sql .= ' AND task_date = :task_date';
+            $params['task_date'] = $date;
+        }
+
+        $sql .= ' ORDER BY task_date ASC, all_day DESC, time_start ASC, id ASC LIMIT :limit';
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->bindValue(':title', '%' . $title . '%');
+        if ($date) {
+            $stmt->bindValue(':task_date', $date);
+        }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return array_map([$this, 'serialize'], $stmt->fetchAll() ?: []);
+    }
+
     public function findById(int $userId, int $taskId): ?array
     {
         $stmt = $this->pdo->prepare('SELECT * FROM tasks WHERE id = :id AND user_id = :user_id AND deleted_at IS NULL LIMIT 1');
