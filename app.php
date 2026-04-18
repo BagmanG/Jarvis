@@ -13,7 +13,7 @@ date_default_timezone_set(config('app.timezone', 'UTC'));
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/app.css?v=1.0.0">
+    <link rel="stylesheet" href="assets/css/app.css?v=1.0.2">
 </head>
 <body>
 <div id="app" class="app-shell">
@@ -230,6 +230,6 @@ window.APP_CONFIG = {
     defaultTimezone: <?= json_encode(config('app.timezone', 'UTC'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
 };
 </script>
-<script type="module" src="assets/js/core/app.js?v=1.0.1"></script>
+<script type="module" src="assets/js/core/app.js?v=1.0.2"></script>
 </body>
 </html>

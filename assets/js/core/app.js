@@ -4,7 +4,7 @@ import './theme.js';
 import { initCalendarView, shiftVisibleMonth } from '../modules/calendar/calendar-view.js';
 import { initTaskForm, openTaskForm, closeTaskForm, getTaskFormPayload } from '../modules/tasks/task-form.js';
 import { initTaskView, setTaskLoading } from '../modules/tasks/task-view.js';
-import { getProfilePayload, initProfileView } from '../modules/profile/profile-view.js';
+import { getProfilePayload, initProfileView } from '../modules/profile/profile-view.v102.js';
 import { formatMonthTitle, isoDate, RU_MONTHS } from '../utils/dates.js';
 
 const tg = window.Telegram?.WebApp;
