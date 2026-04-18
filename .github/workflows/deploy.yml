@@ -36,9 +36,11 @@ jobs:
           dangerous-clean-slate: true
           log-level: verbose
           exclude: |
-            **/.git*
-            **/.github/**
-            **/.gitignore
-            **/.gitattributes
-            **/.gitmodules
-            **/README.md
+            .git
+            .git/**
+            .github
+            .github/**
+            .gitignore
+            .gitattributes
+            .gitmodules
+            README.md
