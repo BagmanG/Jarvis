@@ -38,7 +38,7 @@ date_default_timezone_set(config('app.timezone', 'UTC'));
                 </div>
             </div>
             <div class="header-navigation-row">
-                <div class="weekdays" id="weekdayRow"></div>
+                <div class="section-heading">Ваши задачи</div>
                 <div class="nav-inline-actions">
                     <button id="prevMonthButton" class="icon-button small">‹</button>
                     <button id="nextMonthButton" class="icon-button small">›</button>
@@ -49,6 +49,7 @@ date_default_timezone_set(config('app.timezone', 'UTC'));
         <main class="content-area">
             <section class="calendar-panel card enter-up">
                 <div class="calendar-stage">
+                    <div class="weekdays weekdays-inline" id="weekdayRow"></div>
                     <div id="calendarGrid" class="calendar-grid"></div>
                 </div>
             </section>
@@ -140,6 +141,16 @@ date_default_timezone_set(config('app.timezone', 'UTC'));
                         <option value="archived">Архив</option>
                     </select>
                 </label>
+                <label class="ios-row">
+                    <span>Напомнить</span>
+                    <select id="taskReminderInput" class="ios-inline-input">
+                        <option value="360">За 6 часов</option>
+                        <option value="60">За 1 час</option>
+                        <option value="30">За 30 минут</option>
+                        <option value="15">За 15 минут</option>
+                        <option value="5" selected>За 5 минут</option>
+                    </select>
+                </label>
             </div>
 
             <div class="sheet-section">
@@ -173,12 +184,8 @@ date_default_timezone_set(config('app.timezone', 'UTC'));
 
             <div class="sheet-section">
                 <div class="section-title">Аватар</div>
-                <div class="stack-actions">
-                    <label class="ios-button ios-button-primary upload-button">
-                        <input id="avatarUploadInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
-                        Загрузить аватар
-                    </label>
-                    <button id="removeAvatarButton" class="ios-button">Удалить аватар</button>
+                <div class="profile-avatar-hint muted">
+                    Аватар автоматически берётся из профиля Telegram. Если фото недоступно, показывается первая буква имени.
                 </div>
             </div>
 

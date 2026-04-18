@@ -29,11 +29,14 @@ class AvatarService
         $originalPath = base_path($originalRelative);
         $thumbPath = base_path($thumbRelative);
 
+        $this->ensureDirectory(dirname($originalPath));
+        $this->ensureDirectory(dirname($thumbPath));
+
         if (!move_uploaded_file($file['tmp_name'], $originalPath)) {
             throw new \RuntimeException('Не удалось сохранить файл на сервере.');
         }
 
-        $thumbnailCreated = $this->makeThumbnail($originalPath, $thumbPath, $mime, 240, 240);
+        $thumbnailCreated = $this->makeThumbnailFromPath($originalPath, $thumbPath, $mime, 240, 240);
 
         return [
             'type' => 'avatar',
@@ -47,7 +50,7 @@ class AvatarService
         ];
     }
 
-    private function makeThumbnail(string $source, string $target, string $mime, int $maxWidth, int $maxHeight): bool
+    public function makeThumbnailFromPath(string $source, string $target, string $mime, int $maxWidth, int $maxHeight): bool
     {
         if (!function_exists('imagecreatetruecolor')) {
             return false;
@@ -107,5 +110,12 @@ class AvatarService
         imagedestroy($dst);
 
         return (bool) $saved;
+    }
+
+    private function ensureDirectory(string $path): void
+    {
+        if (!is_dir($path)) {
+            mkdir($path, 0775, true);
+        }
     }
 }

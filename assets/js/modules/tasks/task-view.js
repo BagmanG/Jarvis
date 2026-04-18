@@ -46,6 +46,7 @@ export function initTaskView({ onCreate, onToggleComplete, onEdit }) {
           <div class="task-meta-line">
             <span>${task.all_day ? 'Весь день' : formatTimeRange(task)}</span>
             <span>${statusLabel(task.status)}</span>
+            <span>${formatReminder(task.reminder_minutes)}</span>
           </div>
           ${task.description ? `<p class="task-description">${escapeHtml(task.description)}</p>` : ''}
         </div>
@@ -100,4 +101,12 @@ function escapeHtml(text = '') {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+
+function formatReminder(reminderMinutes) {
+  const value = Number(reminderMinutes || 5);
+  if (value === 360) return 'Напоминание за 6 часов';
+  if (value === 60) return 'Напоминание за 1 час';
+  return `Напоминание за ${value} мин`;
 }

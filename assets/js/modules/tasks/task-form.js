@@ -55,6 +55,7 @@ export function getTaskFormPayload() {
     all_day: document.getElementById('taskAllDayInput').checked,
     priority: document.getElementById('taskPriorityInput').value,
     status: document.getElementById('taskStatusInput').value,
+    reminder_minutes: Number(document.getElementById('taskReminderInput').value || 5),
     color: document.getElementById('taskColorPalette').dataset.selectedColor || 'blue',
   };
 }
@@ -68,6 +69,7 @@ function fillTaskForm(task) {
   document.getElementById('taskAllDayInput').checked = !!task.all_day;
   document.getElementById('taskPriorityInput').value = task.priority || 'medium';
   document.getElementById('taskStatusInput').value = task.status || 'active';
+  document.getElementById('taskReminderInput').value = String(task.reminder_minutes || 5);
   selectColor(task.color || 'blue');
   toggleTimeRows();
 }
@@ -81,6 +83,7 @@ function resetTaskForm(date) {
   document.getElementById('taskAllDayInput').checked = false;
   document.getElementById('taskPriorityInput').value = 'medium';
   document.getElementById('taskStatusInput').value = 'active';
+  document.getElementById('taskReminderInput').value = '5';
   selectColor('blue');
   toggleTimeRows();
 }

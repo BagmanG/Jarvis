@@ -5,6 +5,8 @@ use MiniApp\Core\Request;
 use MiniApp\Repositories\SettingsRepository;
 use MiniApp\Repositories\UserRepository;
 use MiniApp\Services\AuthService;
+use MiniApp\Services\TelegramAvatarService;
+use MiniApp\Repositories\FileRepository;
 use MiniApp\Support\ApiResponse;
 use MiniApp\Support\TelegramAuth;
 
@@ -43,6 +45,14 @@ class AuthController
         }
 
         $user = $this->users->createOrUpdateFromTelegram($verified['user']);
+
+        $avatarData = (new TelegramAvatarService())->sync((int) $user['id'], (int) $verified['user']['id']);
+        if ($avatarData) {
+            $fileId = (new FileRepository())->upsertByUserAndType($avatarData);
+            $this->users->updateAvatar((int) $user['id'], $fileId);
+            $user = $this->users->findById((int) $user['id']);
+        }
+
         $settings = $this->settings->getByUserId((int) $user['id']);
         $bootstrap = $this->authService->bootstrapForUser($user, $settings, $selectedDate);
 

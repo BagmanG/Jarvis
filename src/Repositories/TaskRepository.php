@@ -73,18 +73,19 @@ class TaskRepository
 
     public function create(int $userId, array $data): array
     {
-        $stmt = $this->pdo->prepare('INSERT INTO tasks (user_id, title, description, task_date, time_start, time_end, all_day, priority, color, status, position, created_at, updated_at) VALUES (:user_id, :title, :description, :task_date, :time_start, :time_end, :all_day, :priority, :color, :status, :position, :created_at, :updated_at)');
+        $stmt = $this->pdo->prepare('INSERT INTO tasks (user_id, title, description, task_date, time_start, time_end, all_day, priority, color, status, reminder_minutes, reminder_sent_at, position, created_at, updated_at) VALUES (:user_id, :title, :description, :task_date, :time_start, :time_end, :all_day, :priority, :color, :status, :reminder_minutes, NULL, :position, :created_at, :updated_at)');
         $stmt->execute([
             'user_id' => $userId,
             'title' => $data['title'],
-            'description' => $data['description'],
+            'description' => $data['description'] ?? null,
             'task_date' => $data['task_date'],
-            'time_start' => $data['time_start'],
-            'time_end' => $data['time_end'],
-            'all_day' => $data['all_day'],
-            'priority' => $data['priority'],
-            'color' => $data['color'],
-            'status' => $data['status'],
+            'time_start' => $data['time_start'] ?? null,
+            'time_end' => $data['time_end'] ?? null,
+            'all_day' => $data['all_day'] ?? 0,
+            'priority' => $data['priority'] ?? 'medium',
+            'color' => $data['color'] ?? 'blue',
+            'status' => $data['status'] ?? 'active',
+            'reminder_minutes' => $data['reminder_minutes'] ?? 5,
             'position' => $data['position'] ?? 0,
             'created_at' => now(),
             'updated_at' => now(),
@@ -101,17 +102,25 @@ class TaskRepository
         }
 
         $merged = array_merge($existing, $data);
-        $stmt = $this->pdo->prepare('UPDATE tasks SET title = :title, description = :description, task_date = :task_date, time_start = :time_start, time_end = :time_end, all_day = :all_day, priority = :priority, color = :color, status = :status, position = :position, updated_at = :updated_at WHERE id = :id AND user_id = :user_id');
+        $reminderChanged =
+            (string) $existing['task_date'] !== (string) $merged['task_date'] ||
+            (string) ($existing['time_start'] ?? '') !== (string) ($merged['time_start'] ?? '') ||
+            (int) $existing['all_day'] !== (int) $merged['all_day'] ||
+            (int) ($existing['reminder_minutes'] ?? 5) !== (int) ($merged['reminder_minutes'] ?? 5);
+
+        $stmt = $this->pdo->prepare('UPDATE tasks SET title = :title, description = :description, task_date = :task_date, time_start = :time_start, time_end = :time_end, all_day = :all_day, priority = :priority, color = :color, status = :status, reminder_minutes = :reminder_minutes, reminder_sent_at = :reminder_sent_at, position = :position, updated_at = :updated_at WHERE id = :id AND user_id = :user_id AND deleted_at IS NULL');
         $stmt->execute([
             'title' => $merged['title'],
-            'description' => $merged['description'],
+            'description' => $merged['description'] ?? null,
             'task_date' => $merged['task_date'],
-            'time_start' => $merged['time_start'],
-            'time_end' => $merged['time_end'],
-            'all_day' => $merged['all_day'],
-            'priority' => $merged['priority'],
-            'color' => $merged['color'],
-            'status' => $merged['status'],
+            'time_start' => $merged['time_start'] ?? null,
+            'time_end' => $merged['time_end'] ?? null,
+            'all_day' => $merged['all_day'] ?? 0,
+            'priority' => $merged['priority'] ?? 'medium',
+            'color' => $merged['color'] ?? 'blue',
+            'status' => $merged['status'] ?? 'active',
+            'reminder_minutes' => $merged['reminder_minutes'] ?? 5,
+            'reminder_sent_at' => $reminderChanged ? null : ($existing['reminder_sent_at'] ?? null),
             'position' => $merged['position'] ?? 0,
             'updated_at' => now(),
             'id' => $taskId,
@@ -145,6 +154,45 @@ class TaskRepository
         ]);
     }
 
+    public function getDueReminders(): array
+    {
+        $sql = "SELECT t.*, u.telegram_id
+            FROM tasks t
+            INNER JOIN users u ON u.id = t.user_id
+            WHERE t.deleted_at IS NULL
+              AND t.status = 'active'
+              AND t.reminder_sent_at IS NULL
+              AND CASE
+                    WHEN t.all_day = 1 THEN DATE_SUB(CONCAT(t.task_date, ' 09:00:00'), INTERVAL t.reminder_minutes MINUTE)
+                    WHEN t.time_start IS NOT NULL THEN DATE_SUB(CONCAT(t.task_date, ' ', t.time_start), INTERVAL t.reminder_minutes MINUTE)
+                    ELSE DATE_SUB(CONCAT(t.task_date, ' 09:00:00'), INTERVAL t.reminder_minutes MINUTE)
+                  END <= NOW()
+              AND CONCAT(t.task_date, ' ', COALESCE(t.time_start, '23:59:59')) >= DATE_SUB(NOW(), INTERVAL 1 DAY)
+            ORDER BY t.task_date ASC, t.time_start ASC, t.id ASC";
+
+        $stmt = $this->pdo->query($sql);
+        return $stmt->fetchAll() ?: [];
+    }
+
+    public function markReminderSent(int $taskId): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE tasks SET reminder_sent_at = :reminder_sent_at, updated_at = :updated_at WHERE id = :id');
+        $stmt->execute([
+            'id' => $taskId,
+            'reminder_sent_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    public function markReminderFailed(int $taskId): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE tasks SET updated_at = :updated_at WHERE id = :id');
+        $stmt->execute([
+            'id' => $taskId,
+            'updated_at' => now(),
+        ]);
+    }
+
     private function findRawById(int $userId, int $taskId): ?array
     {
         $stmt = $this->pdo->prepare('SELECT * FROM tasks WHERE id = :id AND user_id = :user_id AND deleted_at IS NULL LIMIT 1');
@@ -166,6 +214,7 @@ class TaskRepository
             'priority' => $task['priority'],
             'color' => $task['color'] ?: 'blue',
             'status' => $task['status'],
+            'reminder_minutes' => isset($task['reminder_minutes']) ? (int) $task['reminder_minutes'] : 5,
             'position' => isset($task['position']) ? (int) $task['position'] : 0,
             'created_at' => $task['created_at'],
             'updated_at' => $task['updated_at'],

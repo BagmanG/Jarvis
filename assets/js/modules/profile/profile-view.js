@@ -2,17 +2,11 @@ import { store } from '../../core/store.js';
 
 const ACCENTS = ['blue', 'purple', 'green', 'pink', 'orange', 'red', 'teal'];
 
-export function initProfileView({ onOpen, onClose, onSave, onUploadAvatar, onRemoveAvatar, onSaveTheme }) {
+export function initProfileView({ onOpen, onClose, onSave, onSaveTheme }) {
   const sheet = document.getElementById('profileSheet');
   sheet.querySelectorAll('[data-close-sheet]').forEach((button) => button.addEventListener('click', onClose));
   document.querySelector('[data-action="profile"]')?.addEventListener('click', onOpen);
   document.getElementById('saveProfileButton').addEventListener('click', onSave);
-  document.getElementById('avatarUploadInput').addEventListener('change', (event) => {
-    const file = event.target.files?.[0];
-    if (file) onUploadAvatar(file);
-    event.target.value = '';
-  });
-  document.getElementById('removeAvatarButton').addEventListener('click', onRemoveAvatar);
 
   renderSegmented('themeModeControl', [
     { value: 'light', label: 'Светлая' },

@@ -36,8 +36,6 @@ initProfileView({
   onOpen: openProfile,
   onClose: closeSheet,
   onSave: saveProfile,
-  onUploadAvatar: uploadAvatar,
-  onRemoveAvatar: removeAvatar,
   onSaveTheme: saveTheme,
 });
 wireMonthPicker();
@@ -284,6 +282,7 @@ async function duplicateCurrentTask() {
     priority: task.priority,
     status: 'active',
     color: task.color,
+    reminder_minutes: task.reminder_minutes ?? 5,
   };
   try {
     await api.createTask(payload);
@@ -329,25 +328,6 @@ async function saveTheme(silent = false) {
   }
 }
 
-async function uploadAvatar(file) {
-  try {
-    const profile = await api.uploadAvatar(file);
-    store.set({ profile });
-    showToast('Аватар загружен');
-  } catch (error) {
-    showToast(readError(error), 'error');
-  }
-}
-
-async function removeAvatar() {
-  try {
-    const profile = await api.deleteAvatar();
-    store.set({ profile });
-    showToast('Аватар удалён');
-  } catch (error) {
-    showToast(readError(error), 'error');
-  }
-}
 
 function isCurrentVisibleMonth(dateString) {
   const d = new Date(dateString + 'T00:00:00');

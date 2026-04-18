@@ -91,6 +91,8 @@ button { cursor: pointer; border: 0; background: transparent; }
 .header-top-row { margin-bottom: 14px; }
 .header-actions { display: flex; align-items: center; gap: 10px; }
 .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; flex: 1; }
+.weekdays-inline { padding: 6px 4px 10px; margin-bottom: 2px; }
+.section-heading { font-size: 20px; font-weight: 800; }
 .weekdays span { text-align: center; color: var(--text-secondary); font-size: 13px; font-weight: 600; }
 .nav-inline-actions { display: flex; gap: 8px; }
 
@@ -113,6 +115,7 @@ button { cursor: pointer; border: 0; background: transparent; }
   overflow: hidden;
   border-radius: 24px;
   background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.04));
+  padding: 10px 8px 8px;
 }
 .calendar-grid {
   display: grid;
@@ -264,6 +267,7 @@ button { cursor: pointer; border: 0; background: transparent; }
 .sheet-link { color: var(--text-secondary); font-weight: 700; }
 .sheet-link.accent { color: var(--accent); }
 .sheet-content { padding: 16px; max-height: calc(92vh - 56px); overflow: auto; }
+.profile-sheet .sheet-content { padding-bottom: calc(26px + var(--safe-bottom)); }
 .ios-input-group, .ios-panel-list, .sheet-section { margin-bottom: 14px; }
 .ios-input-group, .ios-panel-list {
   background: var(--surface-soft); border: 1px solid var(--divider); border-radius: 22px; overflow: hidden;
@@ -308,6 +312,7 @@ button { cursor: pointer; border: 0; background: transparent; }
   background: var(--accent); color: white; border-color: transparent; box-shadow: 0 12px 28px var(--accent-soft);
 }
 .profile-content { display: grid; gap: 14px; }
+.profile-avatar-hint { padding: 14px 16px; background: var(--surface-soft); border: 1px solid var(--divider); border-radius: 18px; line-height: 1.45; }
 .profile-hero { display: grid; grid-template-columns: 92px 1fr; gap: 16px; padding: 18px; align-items: center; }
 .profile-avatar-large {
   width: 92px; height: 92px; border-radius: 999px; background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 80%, white 8%)); display: grid; place-items: center; overflow: hidden; color: white; font-size: 34px; font-weight: 800;
@@ -355,4 +360,8 @@ button { cursor: pointer; border: 0; background: transparent; }
 @keyframes enterUp {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 640px) {
+  .profile-sheet .sheet-content { padding-left: 16px; padding-right: 16px; padding-bottom: calc(30px + var(--safe-bottom)); }
 }

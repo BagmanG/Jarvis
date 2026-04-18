@@ -81,18 +81,7 @@ export const api = {
       body: JSON.stringify({ display_name: displayName }),
     });
   },
-  uploadAvatar(file) {
-    const formData = new FormData();
-    formData.append('avatar', file);
-    return request('/profile/avatar', {
-      method: 'POST',
-      body: formData,
-      headers: {},
-    });
-  },
-  deleteAvatar() {
-    return request('/profile/avatar', { method: 'DELETE' });
-  },
+
   updateTheme(payload) {
     return request('/settings/theme', {
       method: 'PATCH',

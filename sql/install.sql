@@ -57,6 +57,8 @@ CREATE TABLE IF NOT EXISTS `tasks` (
   `priority` ENUM('low','medium','high') NOT NULL DEFAULT 'medium',
   `color` VARCHAR(32) NULL DEFAULT 'blue',
   `status` ENUM('active','completed','archived') NOT NULL DEFAULT 'active',
+  `reminder_minutes` INT NOT NULL DEFAULT 5,
+  `reminder_sent_at` DATETIME NULL,
   `position` INT NULL DEFAULT 0,
   `created_at` DATETIME NOT NULL,
   `updated_at` DATETIME NOT NULL,

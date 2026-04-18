@@ -90,6 +90,15 @@ class Validator
             $clean['color'] = in_array($color, $allowed, true) ? $color : 'blue';
         }
 
+        if (!$partial || array_key_exists('reminder_minutes', $data)) {
+            $reminderMinutes = isset($data['reminder_minutes']) ? (int) $data['reminder_minutes'] : 5;
+            if (!in_array($reminderMinutes, [360, 60, 30, 15, 5], true)) {
+                $errors['reminder_minutes'] = 'Недопустимое значение напоминания.';
+            } else {
+                $clean['reminder_minutes'] = $reminderMinutes;
+            }
+        }
+
         return [$errors, $clean];
     }
 
