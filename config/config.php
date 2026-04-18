@@ -23,7 +23,7 @@ return [
         'charset' => 'utf8mb4',
     ],
     'telegram' => [
-        'bot_token' => '8228911470:AAGDl22PDWAXj6xFnCra2xUM3zXN_wPglPA',
+        'bot_token' => '8228911470:AAEzHxOT_20UipKSWVsxk_XPWuvHpWmhsNk',
     ],
 
     'ai' => [
