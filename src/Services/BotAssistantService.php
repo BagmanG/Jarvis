@@ -4,7 +4,7 @@ namespace MiniApp\Services;
 use MiniApp\Repositories\BotStateRepository;
 use MiniApp\Repositories\TaskRepository;
 use MiniApp\Repositories\UserRepository;
-use MiniApp\Support\ConversationFileLogger;
+use MiniApp\Support\Logger;
 
 class BotAssistantService
 {
@@ -45,7 +45,6 @@ class BotAssistantService
         $this->state->upsert((int) $user['id'], $chatId);
 
         if (!empty($message['text']) && trim((string) $message['text']) === '/start') {
-            ConversationFileLogger::logUserMessage($telegramUser, $chatId, trim((string) $message['text']));
             $this->state->clearPendingAction((int) $user['id']);
             $this->state->clearDraft((int) $user['id']);
             $this->telegram->sendMessage($chatId, $this->buildWelcomeMessage($user));
@@ -53,13 +52,11 @@ class BotAssistantService
         }
 
         if (!empty($message['text']) && trim((string) $message['text']) === '/today') {
-            ConversationFileLogger::logUserMessage($telegramUser, $chatId, trim((string) $message['text']));
             $this->sendTaskList($chatId, (int) $user['id'], 'today', 1);
             return;
         }
 
         if (!empty($message['text']) && trim((string) $message['text']) === '/week') {
-            ConversationFileLogger::logUserMessage($telegramUser, $chatId, trim((string) $message['text']));
             $this->sendTaskList($chatId, (int) $user['id'], 'week', 1);
             return;
         }
@@ -81,7 +78,6 @@ class BotAssistantService
             return;
         }
 
-        ConversationFileLogger::logUserMessage($telegramUser, $chatId, $incomingText);
         $this->handleNaturalLanguage($user, $chatId, $incomingText);
     }
 
