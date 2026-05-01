@@ -1,6 +1,7 @@
 <?php
 namespace MiniApp\Services;
 
+use MiniApp\Support\ConversationFileLogger;
 use MiniApp\Support\Logger;
 
 class TelegramBotApi
@@ -16,11 +17,17 @@ class TelegramBotApi
 
     public function sendMessage(int $chatId, string $text, array $options = []): ?array
     {
-        return $this->request('sendMessage', array_merge([
+        $response = $this->request('sendMessage', array_merge([
             'chat_id' => $chatId,
             'text' => $text,
             'parse_mode' => 'HTML',
         ], $options));
+
+        if ($this->isSuccessfulResponse($response)) {
+            ConversationFileLogger::logBotMessage($text);
+        }
+
+        return $response;
     }
 
     public function answerCallbackQuery(string $callbackQueryId, string $text = '', bool $showAlert = false): ?array
@@ -134,5 +141,10 @@ class TelegramBotApi
         }
         $decoded = json_decode($body, true);
         return is_array($decoded) ? $decoded : null;
+    }
+
+    private function isSuccessfulResponse(?array $response): bool
+    {
+        return is_array($response) && !empty($response['ok']);
     }
 }
