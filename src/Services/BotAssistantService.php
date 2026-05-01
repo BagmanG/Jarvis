@@ -41,6 +41,11 @@ class BotAssistantService
             return;
         }
 
+        try {
+            Logger::telegramUserMessage($message);
+        } catch (\Throwable $e) {
+        }
+
         $user = $this->users->createOrUpdateFromTelegram($telegramUser);
         $this->state->upsert((int) $user['id'], $chatId);
 

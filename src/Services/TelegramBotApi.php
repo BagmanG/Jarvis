@@ -16,6 +16,11 @@ class TelegramBotApi
 
     public function sendMessage(int $chatId, string $text, array $options = []): ?array
     {
+        try {
+            Logger::telegramBotMessage($text);
+        } catch (\Throwable $e) {
+        }
+
         return $this->request('sendMessage', array_merge([
             'chat_id' => $chatId,
             'text' => $text,
