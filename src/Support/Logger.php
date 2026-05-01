@@ -56,7 +56,8 @@ class Logger
     {
         try {
             $path = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'logs.txt';
-            $payload = $entry . PHP_EOL . PHP_EOL;
+            $timestamp = date('d.m.Y H:i:s');
+            $payload = '[' . $timestamp . ']' . $entry . PHP_EOL . PHP_EOL;
             file_put_contents($path, $payload, FILE_APPEND | LOCK_EX);
         } catch (Throwable $e) {
             error_log('[MiniApp Logger] appendTelegramMessageLog failed: ' . $e->getMessage());
