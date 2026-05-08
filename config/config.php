@@ -17,8 +17,8 @@ return [
     'db' => [
         'host' => 'localhost',
         'port' => 3306,
-        'name' => 'bagmanov13_jarv',
-        'user' => 'bagmanov13_jarv',
+        'name' => 'jarvis_db',
+        'user' => 'jarvis_user',
         'pass' => 'Gadel2001%',
         'charset' => 'utf8mb4',
     ],

@@ -2,7 +2,7 @@
 spl_autoload_register(function ($class) {
     $prefix = 'MiniApp\\';
     $baseDir = __DIR__ . '/../';
-
+    //$baseDir = __DIR__;
     if (strpos($class, $prefix) !== 0) {
         return;
     }

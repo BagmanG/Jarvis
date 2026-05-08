@@ -1,0 +1,387 @@
+{
+    "description": "DO NOT DELETE THIS FILE. This file is used to keep track of which files have been synced in the most recent deployment. If you delete this file a resync will need to be done (which can take a while) - read more: https://github.com/SamKirkland/FTP-Deploy-Action",
+    "version": "1.0.0",
+    "generatedTime": 1777641649424,
+    "data": [
+        {
+            "type": "file",
+            "name": ".env",
+            "size": 186,
+            "hash": "50fa0f0b975b4ceef5fde61ca6bd4f2d8422c4f4a8403f3919cf97011b60f079"
+        },
+        {
+            "type": "file",
+            "name": ".htaccess",
+            "size": 227,
+            "hash": "ebd6b78247d0a573feaca848b923b8084acca51635a1b0da3a5e2b012e61cbdc"
+        },
+        {
+            "type": "file",
+            "name": "LICENSE",
+            "size": 1064,
+            "hash": "10ed838d906d0b17c864730cdf2227b0aba6154835876b5bc54083bb721c7d43"
+        },
+        {
+            "type": "folder",
+            "name": "api"
+        },
+        {
+            "type": "file",
+            "name": "app.php",
+            "size": 11004,
+            "hash": "0fd935fc2e504cc85bec904ea882c3ef59f913bbefe1e007be20465181204ce9"
+        },
+        {
+            "type": "folder",
+            "name": "assets"
+        },
+        {
+            "type": "file",
+            "name": "bot.php",
+            "size": 959,
+            "hash": "c4ee94889f8cd0b2d53ced1887b9c3ded21f084c6ac7107bf933fd3c58625cb8"
+        },
+        {
+            "type": "folder",
+            "name": "config"
+        },
+        {
+            "type": "folder",
+            "name": "cron"
+        },
+        {
+            "type": "folder",
+            "name": "sql"
+        },
+        {
+            "type": "folder",
+            "name": "src"
+        },
+        {
+            "type": "folder",
+            "name": "api/v1"
+        },
+        {
+            "type": "folder",
+            "name": "assets/css"
+        },
+        {
+            "type": "folder",
+            "name": "assets/js"
+        },
+        {
+            "type": "file",
+            "name": "config/config.example.php",
+            "size": 1040,
+            "hash": "54a324dcb7fc3f158467400cb0dd5b6c595e4eba7f4949bff3abb51cc19a66fe"
+        },
+        {
+            "type": "file",
+            "name": "config/config.php",
+            "size": 1073,
+            "hash": "abff6a09e56da988c5dc3e10892ba9b714575ea3fe0076bb24b5e88ae7db3e55"
+        },
+        {
+            "type": "file",
+            "name": "cron/reminders.php",
+            "size": 3566,
+            "hash": "26359efc0d38925db630a87edbc6bf565c309b25c0042527c379b4acd4b6d75e"
+        },
+        {
+            "type": "file",
+            "name": "sql/install.sql",
+            "size": 4503,
+            "hash": "10c5c87a5bc0e52d1862fba4b10599ef02a3aa42fa208ef9930ab648b4b2b772"
+        },
+        {
+            "type": "file",
+            "name": "sql/upgrade_bot.sql",
+            "size": 1225,
+            "hash": "62189522db7fed7d4a73652fc458202fff48f2f08f954d0aded98f7a026b5b67"
+        },
+        {
+            "type": "file",
+            "name": "sql/upgrade_reminders.sql",
+            "size": 163,
+            "hash": "922ff9febc928daf6606ca33dab2dc46ed52e774dcf2fbbb88f81fea9563d7f6"
+        },
+        {
+            "type": "folder",
+            "name": "src/Controllers"
+        },
+        {
+            "type": "folder",
+            "name": "src/Core"
+        },
+        {
+            "type": "folder",
+            "name": "src/Repositories"
+        },
+        {
+            "type": "folder",
+            "name": "src/Services"
+        },
+        {
+            "type": "folder",
+            "name": "src/Support"
+        },
+        {
+            "type": "file",
+            "name": "api/v1/index.php",
+            "size": 3680,
+            "hash": "f50728929daf3335d755539a3bb0473751b8fd0175f607e6931472a4f596930a"
+        },
+        {
+            "type": "file",
+            "name": "assets/css/app.css",
+            "size": 17163,
+            "hash": "871d8dae7bf55b5962fb7e9782c1bc9fab45d6e7b3909d572cfb72fd55259e25"
+        },
+        {
+            "type": "folder",
+            "name": "assets/js/core"
+        },
+        {
+            "type": "folder",
+            "name": "assets/js/modules"
+        },
+        {
+            "type": "folder",
+            "name": "assets/js/utils"
+        },
+        {
+            "type": "file",
+            "name": "src/Controllers/AuthController.php",
+            "size": 2183,
+            "hash": "126524660a521b1419966bc0656d23e11aa5217696b2f31a97baf1c1022508b4"
+        },
+        {
+            "type": "file",
+            "name": "src/Controllers/BaseController.php",
+            "size": 913,
+            "hash": "38bc3e4f9b9c8594bd80aef8b18aa7a8b7ad7e84923e5cbaeba1bb461449c052"
+        },
+        {
+            "type": "file",
+            "name": "src/Controllers/BootstrapController.php",
+            "size": 1074,
+            "hash": "c41f1e4420f6d9073e1b0e0e151608660a75c58e515b97fdd6cbe726c3c6c169"
+        },
+        {
+            "type": "file",
+            "name": "src/Controllers/CalendarController.php",
+            "size": 793,
+            "hash": "51ee4b00b60d471f8df117a0685f078fe3170d9d3ea2398f2b274a9b71d32a24"
+        },
+        {
+            "type": "file",
+            "name": "src/Controllers/ProfileController.php",
+            "size": 1981,
+            "hash": "c901cbb188a6fc80748a5f3ba8bc87f4a1dea4553da1cb0606faa67ae33072b1"
+        },
+        {
+            "type": "file",
+            "name": "src/Controllers/SettingsController.php",
+            "size": 850,
+            "hash": "3f810f6eb52ca1f90b2b28b6c0ea7bba0235918c8dba4f52e73b15ecae45a9c1"
+        },
+        {
+            "type": "file",
+            "name": "src/Controllers/TaskController.php",
+            "size": 3668,
+            "hash": "d18efb0a294658bfda0df02c5627529f578bf19633e36938b26b5193ebe91995"
+        },
+        {
+            "type": "file",
+            "name": "src/Core/Database.php",
+            "size": 1046,
+            "hash": "33b09cd401fe2b1b57b99c0c4795f6142fc5bc712e6b8acb5256bc5660871e21"
+        },
+        {
+            "type": "file",
+            "name": "src/Core/Request.php",
+            "size": 1903,
+            "hash": "c0d4f8c6b5d0ad95d5c364dd7d6346dc7b816ebff7d67838ac9a9f84dd6ec268"
+        },
+        {
+            "type": "file",
+            "name": "src/Core/Response.php",
+            "size": 324,
+            "hash": "94573e5f7c9b26a1fa1a2eb8b67d2948210751417d019844057044144cbaeb28"
+        },
+        {
+            "type": "file",
+            "name": "src/Repositories/BotStateRepository.php",
+            "size": 4664,
+            "hash": "a8bcdfb231b86b1e5a6ee8946678e4b82fe28acafbff321dce52f98f45a24ff4"
+        },
+        {
+            "type": "file",
+            "name": "src/Repositories/SettingsRepository.php",
+            "size": 2041,
+            "hash": "66391027140e7bfdf1a10ffd0294dc0a283f8000041be168e0b3d729fa401fb8"
+        },
+        {
+            "type": "file",
+            "name": "src/Repositories/FileRepository.php",
+            "size": 2761,
+            "hash": "104ab94f2dda74d1fed6d1bdc6dc8affd7287f05061974aba0b6e4f1b72b6f93"
+        },
+        {
+            "type": "file",
+            "name": "src/Repositories/TaskRepository.php",
+            "size": 10524,
+            "hash": "98b43360d8f33c8e78cdcdd88b80833b9e56a2d8b5c54cc220f3ee3b90fe0ea7"
+        },
+        {
+            "type": "file",
+            "name": "src/Repositories/UserRepository.php",
+            "size": 4664,
+            "hash": "bcda3aa4dbc701e026e5848550480a3e7b119129c0fd12dd5b46b0cb65288405"
+        },
+        {
+            "type": "file",
+            "name": "src/Services/AuthService.php",
+            "size": 1583,
+            "hash": "716f829771c3bff946d3a330608352c861cd3c1b938b031342967a35542a1830"
+        },
+        {
+            "type": "file",
+            "name": "src/Services/AiTunnelService.php",
+            "size": 4648,
+            "hash": "2ab81eca215bace5a8db0bf07a5dfa8bfa1da19a6e279fe86c420404cd2d8081"
+        },
+        {
+            "type": "file",
+            "name": "src/Services/AvatarService.php",
+            "size": 4227,
+            "hash": "76c36d56fa2046c07ba85d8a82bde0fda9f9d23083fb415509a65ca75da78608"
+        },
+        {
+            "type": "file",
+            "name": "src/Services/BotAssistantService.php",
+            "size": 33782,
+            "hash": "6f7324ad50229334be05bf6b0c21771d194a449fbd6feddb216ba4786a153cc5"
+        },
+        {
+            "type": "file",
+            "name": "src/Services/TelegramAvatarService.php",
+            "size": 4425,
+            "hash": "848ce31acee01570237387ca55c11a684854e69410f2883d39ec41e3b82e92e5"
+        },
+        {
+            "type": "file",
+            "name": "src/Services/TelegramBotApi.php",
+            "size": 4980,
+            "hash": "d49f32a14c7bd85707eae190badb10d3cc59ab819617747655abc1d19983a43d"
+        },
+        {
+            "type": "file",
+            "name": "src/Support/ApiResponse.php",
+            "size": 787,
+            "hash": "bf682ba10ab1ac08412e729a70ba75d5ec96e6fb450eb0a9f094eec3c3c3037e"
+        },
+        {
+            "type": "file",
+            "name": "src/Support/Autoload.php",
+            "size": 354,
+            "hash": "ad77838e89bf826b8ed89478fae37ce32abb0bccdbd2424b1fb1d0ccd510b29c"
+        },
+        {
+            "type": "file",
+            "name": "src/Support/Logger.php",
+            "size": 3164,
+            "hash": "a10c29fffd3684e2decfd5e1cd8bf235d16fb035e9d6a8c11de2cddd84fedcc0"
+        },
+        {
+            "type": "file",
+            "name": "src/Support/Token.php",
+            "size": 1259,
+            "hash": "f45a86c414cf9e76139e119533b79c0eb0b9ba2ddeb8ff6bc7f11b0e60b6c0e0"
+        },
+        {
+            "type": "file",
+            "name": "src/Support/TelegramAuth.php",
+            "size": 1471,
+            "hash": "6ad581cb707aea3a289b271b2f3c444fe57dcd49e6ea57b4765d40a504964fa0"
+        },
+        {
+            "type": "file",
+            "name": "src/Support/Validator.php",
+            "size": 5355,
+            "hash": "ada5aa19223ed139364facf85f6f2225d730351411549fba354d19b44c3d44fd"
+        },
+        {
+            "type": "file",
+            "name": "src/Support/helpers.php",
+            "size": 865,
+            "hash": "647600aa29fa7ee0ec8343f645b4c80d5150f3c571b9ba595fbd7840231b4858"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/core/api.js",
+            "size": 2515,
+            "hash": "2dd60e5452818e4c61c9ca3352daf0f1ed5c71f343f6a205ce4deabe8732f165"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/core/app.js",
+            "size": 11432,
+            "hash": "f51d829170e1ac622e5684e5aa7ede638388804c769533bbd1b9b79cbd3e5555"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/core/store.js",
+            "size": 1298,
+            "hash": "553ae8ffd75ef7645f85300cb3201c98c04ac2c4e50a45bf9256059e8adc5f11"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/core/theme.js",
+            "size": 1174,
+            "hash": "c1d2b090f5c96925ba57efe8ea4d668c3e94283f2dac0114f63bdff008c718bd"
+        },
+        {
+            "type": "folder",
+            "name": "assets/js/modules/calendar"
+        },
+        {
+            "type": "folder",
+            "name": "assets/js/modules/profile"
+        },
+        {
+            "type": "folder",
+            "name": "assets/js/modules/tasks"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/utils/dates.js",
+            "size": 2770,
+            "hash": "b6a0730cd521399783505eb63f94e9cc05873e52a14b8d5ace3f8a4a3ba808c1"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/modules/calendar/calendar-view.js",
+            "size": 3038,
+            "hash": "a85c099e821d3095df3244ebeef73c2b04357591e2c4ad372d481632d307d326"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/modules/profile/profile-view.v103.js",
+            "size": 4446,
+            "hash": "9cf9940f0009dc7cc1b18c6b07626e5a06404d801c91c11225dab57c026a6743"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/modules/tasks/task-form.js",
+            "size": 5214,
+            "hash": "def5a753b374240bf44cfd28cb6a3190a982405dfc329e996ea38ef4ce86ed0a"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/modules/tasks/task-view.js",
+            "size": 4382,
+            "hash": "392ec9b1c46521801ba85939ddd980c09c60186b985e346e37e73efdd55503e9"
+        }
+    ]
+}
